@@ -1,26 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;900&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+* { box-sizing: border-box; margin: 0; padding: 0; direction: rtl; }
+html { scroll-behavior: smooth; font-size: 16px; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Rubik', sans-serif;
+  background: #fff;
+  color: #0F172A;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* ── Accessibility ── */
+[data-a11y] :focus-visible { outline: 3px solid #005fcc !important; outline-offset: 2px !important; }
+
+/* ── Animations ── */
+@keyframes fadeUp  { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+@keyframes scaleIn { from{opacity:0;transform:scale(0.94)} to{opacity:1;transform:scale(1)} }
+@keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes pulse-wa{ 0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,0.4)} 70%{box-shadow:0 0 0 12px rgba(37,211,102,0)} }
+
+.float { animation: float 3.5s ease-in-out infinite; }
+.pulse-wa { animation: pulse-wa 2s ease infinite; }
+
+/* ── Card ── */
+.card {
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+
+/* ── Buttons ── */
+.btn-red {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #CC2222; color: #fff;
+  padding: 13px 30px; border-radius: 3px;
+  font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 15px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-red:hover { background: #a81b1b; }
+
+.btn-outline {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; color: #334155;
+  padding: 12px 26px; border-radius: 3px;
+  font-family: 'Rubik', sans-serif; font-weight: 600; font-size: 14px;
+  text-decoration: none; border: 1.5px solid #d1d5db; cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-outline:hover { border-color: #CC2222; color: #CC2222; }
+
+/* ── Section labels ── */
+.sec-label {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: #CC2222; margin-bottom: 14px;
+  border-right: 3px solid #CC2222; padding-right: 10px;
+}
+.sec-label.blue   { color: #2563eb; border-color: #2563eb; }
+.sec-label.green  { color: #16a34a; border-color: #16a34a; }
+.sec-label.yellow { color: #b45309; border-color: #b45309; }
+.sec-label.purple { color: #7c3aed; border-color: #7c3aed; }
+.sec-label.pink   { color: #CC2222; border-color: #CC2222; }
+
+/* ── Section title ── */
+.sec-title {
+  font-size: clamp(24px, 3.5vw, 38px);
+  font-weight: 900; color: #0F172A;
+  letter-spacing: -0.5px; line-height: 1.2;
+}
+
+/* ── Form field ── */
+.field {
+  width: 100%; padding: 13px 16px; border-radius: 3px;
+  border: 1.5px solid #e2e8f0; font-family: 'Rubik', sans-serif;
+  font-size: 14px; color: #0F172A; outline: none; direction: rtl; background: #fff;
+  transition: border-color 0.15s;
+}
+.field:focus { border-color: #CC2222; }
+
+/* ── Separator ── */
+.sep { height: 1px; background: #f1f5f9; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #f8fafc; }
+::-webkit-scrollbar-thumb { background: #CC2222; border-radius: 6px; }
+
+/* ── Skip link ── */
+.skip-link {
+  position: absolute; top: -100px; right: 0;
+  background: #005fcc; color: #fff; padding: 12px 20px;
+  border-radius: 0 0 12px 0; font-weight: 700; text-decoration: none; z-index: 9999;
+}
+.skip-link:focus { top: 0; }
