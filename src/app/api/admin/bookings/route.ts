@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readDb, writeDb } from "@/lib/storage";
+import { dbList, dbInsert, dbUpdate } from "@/lib/storage";
 import { sendEmail, leadEmailHtml } from "@/lib/notify";
 import { ACTIVITIES } from "@/lib/data";
 
@@ -24,20 +24,18 @@ export interface Booking {
 }
 
 export async function GET() {
-  const bookings = readDb<Booking>("bookings", []);
+  const bookings = await dbList<Booking>("bookings");
   return NextResponse.json(bookings.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const bookings = readDb<Booking>("bookings", []);
   const newBooking: Booking = {
     ...body,
     status: "new",
     createdAt: new Date().toISOString(),
   };
-  bookings.push(newBooking);
-  writeDb("bookings", bookings);
+  await dbInsert("bookings", newBooking);
 
   // התראת אימייל
   const act = ACTIVITIES.find(a => a.slug === body.activityId || a.id === body.activityId);
@@ -58,10 +56,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const { id, status } = await req.json();
-  const bookings = readDb<Booking>("bookings", []);
-  const idx = bookings.findIndex(b => b.id === id);
-  if (idx === -1) return NextResponse.json({ error: "not found" }, { status: 404 });
-  bookings[idx].status = status;
-  writeDb("bookings", bookings);
-  return NextResponse.json(bookings[idx]);
+  const ok = await dbUpdate<Booking>("bookings", id, { status });
+  if (!ok) return NextResponse.json({ error: "not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }

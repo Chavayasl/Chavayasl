@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readDb, writeDb } from "@/lib/storage";
+import { dbList, dbInsert, dbUpdate } from "@/lib/storage";
 import { sendEmail, leadEmailHtml } from "@/lib/notify";
 
 export interface Contact {
@@ -14,20 +14,18 @@ export interface Contact {
 }
 
 export async function GET() {
-  const contacts = readDb<Contact>("contacts", []);
+  const contacts = await dbList<Contact>("contacts");
   return NextResponse.json(contacts.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const contacts = readDb<Contact>("contacts", []);
   const newContact: Contact = {
     ...body,
     status: "new",
     createdAt: new Date().toISOString(),
   };
-  contacts.push(newContact);
-  writeDb("contacts", contacts);
+  await dbInsert("contacts", newContact);
 
   // התראת אימייל
   await sendEmail("📩 פנייה חדשה מהאתר", leadEmailHtml("📩 פנייה חדשה", [
@@ -43,10 +41,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const { id, status } = await req.json();
-  const contacts = readDb<Contact>("contacts", []);
-  const idx = contacts.findIndex(c => c.id === id);
-  if (idx === -1) return NextResponse.json({ error: "not found" }, { status: 404 });
-  contacts[idx].status = status;
-  writeDb("contacts", contacts);
-  return NextResponse.json(contacts[idx]);
+  const ok = await dbUpdate<Contact>("contacts", id, { status });
+  if (!ok) return NextResponse.json({ error: "not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }
