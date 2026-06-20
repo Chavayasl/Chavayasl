@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }} className="admin-sidebar">
         {/* Logo */}
         <div style={{ padding: "1.5rem 1.25rem", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
-          <Image src="/logo.png" alt="לוגו" width={36} height={36} style={{ borderRadius: 4 }} />
+          <Image src="/logo-hero.png" alt="לוגו" width={36} height={36} style={{ borderRadius: 4 }} />
           <div>
             <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>פאנל ניהול</div>
             <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>חוויה סביב השנה</div>

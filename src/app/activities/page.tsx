@@ -71,7 +71,7 @@ export default function ActivitiesPage() {
       </div>
 
       {/* Filters bar */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0.85rem 2rem", position: "sticky", top: 64, zIndex: 30, boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0.85rem 2rem", position: "sticky", top: 72, zIndex: 30, boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
         <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <span style={{ color: "#9ca3af", fontSize: 11, fontWeight: 600 }}>עונה:</span>
           {SEASON_FILTERS.map(f => (

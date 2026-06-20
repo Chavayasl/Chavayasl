@@ -29,7 +29,7 @@ export default function AccessibilityPage() {
             <p style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.7 }}>{item.text}</p>
             {i === 2 && (
               <ul style={{ listStyle: "none", marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                <li><a href="mailto:accessibility@chavaya.co.il" style={{ color: "#CC2222", fontSize: 13 }}>📧 accessibility@chavaya.co.il</a></li>
+                <li><a href="mailto:office.chavayasl@gmail.com" style={{ color: "#CC2222", fontSize: 13 }}>📧 office.chavayasl@gmail.com</a></li>
                 <li><a href="tel:0556671997" style={{ color: "#CC2222", fontSize: 13 }}>📞 055-667-1997</a></li>
               </ul>
             )}

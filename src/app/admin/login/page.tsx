@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
       <div style={{ width: "100%", maxWidth: 400, padding: "0 1.5rem" }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <Image src="/logo.png" alt="לוגו" width={64} height={64} style={{ borderRadius: 8, marginBottom: 12 }} />
+          <Image src="/logo-hero.png" alt="לוגו" width={64} height={64} style={{ borderRadius: 8, marginBottom: 12 }} />
           <h1 style={{ fontSize: 22, fontWeight: 900, color: "#0F172A" }}>פאנל ניהול</h1>
           <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>חוויה סביב השנה</p>
         </div>

@@ -62,7 +62,7 @@ function BookForm() {
         </select>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "1rem" }}>
         <div>
           <label style={labelStyle}>שם איש הקשר *</label>
           <input required value={form.contactName} onChange={e => set("contactName", e.target.value)} placeholder="שם מלא" style={inputStyle} />

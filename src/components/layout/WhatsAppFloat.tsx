@@ -11,7 +11,7 @@ export function WhatsAppFloat() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="שלח הודעת ווטסאפ"
-      className="animate-pulse-wa"
+      className="pulse-wa"
       style={{
         position: "fixed", bottom: 24, left: 24, zIndex: 50,
         display: "flex", alignItems: "center", gap: 8,
