@@ -61,3 +61,16 @@ export async function dbDelete(table: string, ids: string[]): Promise<boolean> {
 export function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
+
+/** מעלה קובץ ל-Supabase Storage (bucket "media") ומחזיר URL ציבורי. */
+export async function uploadFile(file: File, folder = "uploads"): Promise<string | null> {
+  if (!supabase) return null;
+  const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const { error } = await supabase.storage.from("media").upload(path, bytes, {
+    contentType: file.type || "application/octet-stream", upsert: false,
+  });
+  if (error) { console.error("[storage] uploadFile:", error.message); return null; }
+  return supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
+}

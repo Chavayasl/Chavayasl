@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ACTIVITIES, TYPE_LABELS, HOLIDAY_CATEGORIES, MONTH_CATEGORIES, AGE_CATEGORIES } from "@/lib/data";
+import { ACTIVITIES, TYPE_LABELS, HOLIDAY_CATEGORIES, MONTH_CATEGORIES, AGE_CATEGORIES, type Activity } from "@/lib/data";
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -29,9 +29,13 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
       {/* Visual */}
       <div style={{ height: 190, position: "relative", overflow: "hidden", background: `linear-gradient(135deg,${a.grad1},${a.grad2})` }}>
         <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg,${a.grad1h},${a.grad2h})`, opacity: hov ? 1 : 0, transition: "opacity 0.4s" }} />
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 72, opacity: 0.18 }}>{a.emoji}</span>
-        </div>
+        {a.mainImage ? (
+          <img src={a.mainImage} alt={a.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 72, opacity: 0.18 }}>{a.emoji}</span>
+          </div>
+        )}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.3) 0%,transparent 55%)" }} />
         <div style={{ position: "absolute", top: 12, right: 12, left: 12, display: "flex", justifyContent: "space-between" }}>
           <span style={{ background: "rgba(255,255,255,0.95)", color: "#374151", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 2 }}>{TYPE_LABELS[a.type]}</span>
@@ -59,7 +63,7 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
   );
 }
 
-export function FeaturedActivities() {
+export function FeaturedActivities({ allActivities = ACTIVITIES }: { allActivities?: Activity[] }) {
   const { ref, v } = useReveal();
   const [group, setGroup] = useState<TabGroup>("holidays");
   const [activeIdx, setActiveIdx] = useState(-1); // -1 = הכל
@@ -67,22 +71,22 @@ export function FeaturedActivities() {
   const currentList = group === "holidays" ? HOLIDAY_CATEGORIES : group === "months" ? MONTH_CATEGORIES : AGE_CATEGORIES;
 
   // הפעילויות המסוננות
-  let activities: typeof ACTIVITIES = ACTIVITIES;
+  let activities: Activity[] = allActivities;
   if (activeIdx >= 0) {
     const current = currentList[activeIdx];
     if (group === "age") {
       const id = (current as typeof AGE_CATEGORIES[0]).id;
-      activities = ACTIVITIES.filter(a => a.ageGroups?.includes(id));
+      activities = allActivities.filter(a => a.ageGroups?.includes(id));
     } else {
       const slugs = (current as typeof HOLIDAY_CATEGORIES[0]).slugs;
-      activities = slugs.map(s => ACTIVITIES.find(a => a.slug === s)).filter(Boolean) as typeof ACTIVITIES;
+      activities = slugs.map(s => allActivities.find(a => a.slug === s)).filter(Boolean) as Activity[];
     }
   }
 
   const handleGroup = (g: TabGroup) => { setGroup(g); setActiveIdx(-1); };
 
   return (
-    <section style={{ background: "#f8fafc", padding: "4.5rem 2rem" }}>
+    <section id="activities" style={{ background: "#f8fafc", padding: "4.5rem 2rem", scrollMarginTop: 72 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div ref={ref} style={{ textAlign: "center", marginBottom: "2.25rem", opacity: v ? 1 : 0, transform: v ? "none" : "translateY(16px)", transition: "all 0.6s" }}>
           <div className="sec-label">🎨 הפעילויות שלנו</div>
@@ -128,9 +132,6 @@ export function FeaturedActivities() {
           <div style={{ textAlign: "center", color: "#94a3b8", fontSize: 14, padding: "2rem 0" }}>אין פעילויות מתאימות כרגע</div>
         )}
 
-        <div style={{ textAlign: "center", marginTop: "3rem" }}>
-          <Link href="/activities" className="btn-outline">לכל הפעילויות ←</Link>
-        </div>
       </div>
     </section>
   );

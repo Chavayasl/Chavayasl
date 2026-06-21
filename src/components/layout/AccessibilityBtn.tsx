@@ -346,33 +346,21 @@ export function AccessibilityBtn() {
         aria-controls="accessibility-menu"
         onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(o => !o); } }}
         style={{
-          width: 52, height: 52, borderRadius: 4,
+          width: 52, height: 52, borderRadius: "50%",
           background: "#2563EB",
           border: "2px solid #fff",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", position: "relative",
           boxShadow: "0 2px 12px rgba(37,99,235,0.35)",
-          transition: "background 0.15s",
+          transition: "background 0.15s, transform 0.15s",
         }}
-        onMouseEnter={e => { e.currentTarget.style.background = "#1d4ed8"; }}
-        onMouseLeave={e => { e.currentTarget.style.background = "#2563EB"; }}
+        onMouseEnter={e => { e.currentTarget.style.background = "#1d4ed8"; e.currentTarget.style.transform = "scale(1.06)"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "#2563EB"; e.currentTarget.style.transform = "scale(1)"; }}
       >
-        {/* ISA Wheelchair accessibility icon */}
-        <svg width="28" height="28" viewBox="0 0 100 100" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-          {/* Head */}
-          <circle cx="50" cy="14" r="10" fill="white"/>
-          {/* Body / arm reaching forward */}
-          <path d="M50 25 L50 50 L30 50" stroke="white" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-          {/* Torso to seat */}
-          <path d="M50 50 L50 68" stroke="white" strokeWidth="8" strokeLinecap="round" fill="none"/>
-          {/* Seat */}
-          <path d="M38 68 L66 68" stroke="white" strokeWidth="7" strokeLinecap="round" fill="none"/>
-          {/* Leg */}
-          <path d="M66 68 L66 80" stroke="white" strokeWidth="7" strokeLinecap="round" fill="none"/>
-          {/* Big wheel */}
-          <circle cx="44" cy="82" r="13" stroke="white" strokeWidth="6" fill="none"/>
-          {/* Small front wheel */}
-          <circle cx="70" cy="83" r="6" stroke="white" strokeWidth="5" fill="none"/>
+        {/* אייקון נגישות (נכה) */}
+        <svg width="26" height="26" viewBox="0 0 512 512" fill="white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <path d="M343.401,380.58c-10.363-4.567-22.446,0.246-26.911,10.629c-21.053,48.497-68.915,79.831-121.938,79.831c-73.4,0-133.12-59.72-133.12-133.12c0-47.596,25.641-91.771,66.888-115.343c9.851-5.591,13.251-18.104,7.639-27.935c-5.591-9.83-18.125-13.312-27.935-7.619c-54.006,30.822-87.552,88.637-87.552,150.897c0,95.99,78.09,174.08,174.08,174.08c69.366,0,131.973-41.021,159.498-104.489C358.556,397.148,353.804,385.085,343.401,380.58z"/>
+          <path d="M490.058,402.002c-4.219-10.527-16.056-15.647-26.624-11.428l-30.638,12.268l-44.585-142.705c-2.683-8.561-10.609-14.377-19.579-14.377H222.364l-6.369-40.96h80.957c11.325,0,20.48-9.155,20.48-20.48s-9.155-20.48-20.48-20.48h-87.306l-10.588-68.219c15.565-8.806,26.214-25.293,26.214-44.421c0-28.242-22.958-51.2-51.2-51.2c-28.221,0-51.2,22.958-51.2,51.2c0,22.671,14.909,41.718,35.369,48.435l26.317,169.738c1.557,9.994,10.138,17.347,20.234,17.347h148.787l46.694,149.463c1.72,5.448,5.612,9.933,10.773,12.39c2.765,1.331,5.796,1.987,8.786,1.987c2.581,0,5.161-0.471,7.619-1.454l51.2-20.48C489.157,424.428,494.256,412.508,490.058,402.002z"/>
         </svg>
         {/* Active count badge */}
         {activeCount > 0 && (

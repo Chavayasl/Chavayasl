@@ -20,7 +20,7 @@ export function Footer() {
             </p>
           </div>
           {[
-            { title: "ניווט", links: [{h:"/",l:"דף הבית"},{h:"/activities",l:"פעילויות"},{h:"/about",l:"אודותינו"},{h:"/book",l:"הזמנה"}] },
+            { title: "ניווט", links: [{h:"/",l:"דף הבית"},{h:"/#activities",l:"פעילויות"},{h:"/about",l:"אודותינו"},{h:"/book",l:"הזמנה"}] },
             { title: "מידע", links: [{h:"/accessibility",l:"הצהרת נגישות"},{h:"/privacy",l:"מדיניות פרטיות"}] },
           ].map((col, ci) => (
             <div key={ci}>

@@ -96,7 +96,7 @@ export function VideoHero() {
           transform: phase === "text" ? "translateY(0)" : "translateY(14px)",
           transition: "opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s",
         }}>
-          <Link href="/activities" style={{
+          <Link href="/#activities" style={{
             background: "#CC2222", color: "#fff",
             padding: "13px 30px", borderRadius: 3,
             fontWeight: 700, fontSize: 15,

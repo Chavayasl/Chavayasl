@@ -26,6 +26,8 @@ export interface Activity {
   ageGroups?: ("gan" | "yesodi" | "hatam" | "afternoon")[];
 
   // ─── מדיה לדף המכירה (אופציונלי — אם ריק, נטענות ברירות מחדל) ───
+  /** תמונה ראשית (כרטיס + ראש העמוד) */
+  mainImage?: string;
   /** וידאו בראש העמוד */
   heroVideo?: string;
   /** תמונת פוסטר מעוצב (אם ריק — נבנה כרטיס גרדיאנט אוטומטי) */
@@ -40,6 +42,8 @@ export interface Activity {
   sellingPoints?: { icon: string; title: string }[];
   /** גלריית תמונות (שורה נעה + Lightbox) */
   gallery?: string[];
+  /** גלריית סרטונים מהפעילות */
+  videos?: { title: string; src: string; poster?: string }[];
   /** הודעות וואטסאפ (בועות צ'אט) */
   waMessages?: { text: string; time: string }[];
   /** הקלטות קול */

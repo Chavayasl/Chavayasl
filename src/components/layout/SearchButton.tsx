@@ -7,7 +7,7 @@ type Result = { href: string; title: string; desc: string; icon: string; kind: s
 
 const PAGES: Result[] = [
   { href: "/", title: "דף הבית", desc: "עמוד הבית", icon: "🏠", kind: "עמוד" },
-  { href: "/activities", title: "כל הפעילויות", desc: "קטלוג הפעילויות המלא", icon: "🎪", kind: "עמוד" },
+  { href: "/#activities", title: "כל הפעילויות", desc: "כל הפעילויות בדף הבית", icon: "🎪", kind: "עמוד" },
   { href: "/about", title: "אודותינו", desc: "מי אנחנו", icon: "ℹ️", kind: "עמוד" },
   { href: "/book", title: "הזמנת פעילות", desc: "טופס הזמנה", icon: "📅", kind: "עמוד" },
 ];

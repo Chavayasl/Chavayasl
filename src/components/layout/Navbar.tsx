@@ -7,11 +7,10 @@ import { SearchButton } from "./SearchButton";
 
 const NAV_RIGHT = [
   { href: "/", label: "בית" },
-  { href: "/activities", label: "פעילויות" },
-];
-const NAV_LEFT = [
+  { href: "/#activities", label: "פעילויות" },
   { href: "/about", label: "אודותינו" },
 ];
+const NAV_LEFT: { href: string; label: string }[] = [];
 const ALL_LINKS = [...NAV_RIGHT, ...NAV_LEFT];
 
 export function Navbar() {

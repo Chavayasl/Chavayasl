@@ -8,13 +8,6 @@ const VALUES = [
   { icon: "⭐", title: "מקצועיות", text: "8+ שנות ניסיון והכשרה מתמדת של הצוות" },
 ];
 
-const TEAM = [
-  { name: "שרה לוי", role: 'מנכ"לית ומייסדת', emoji: "👩‍💼" },
-  { name: "יוסי כהן", role: "מנהל פדגוגי", emoji: "👨‍🏫" },
-  { name: "רינה מזרחי", role: "מדריכת סדנאות", emoji: "👩‍🎨" },
-  { name: "דוד אברהם", role: "מנהל לוגיסטיקה", emoji: "👨‍🔧" },
-];
-
 const STATS = [
   { n: "500+", label: "מוסדות חינוך" },
   { n: "8+", label: "שנות ניסיון" },
@@ -71,7 +64,7 @@ export default function AboutPage() {
             </div>
           </div>
           <div style={{ position: "relative", borderRadius: 4, overflow: "hidden", height: 320 }}>
-            <Image src="/hero2.png" alt="הצוות שלנו" fill style={{ objectFit: "cover" }} />
+            <Image src="/hero2.png" alt="ילדים בפעילות של חוויה סביב השנה" fill style={{ objectFit: "cover" }} />
           </div>
         </div>
 
@@ -87,23 +80,6 @@ export default function AboutPage() {
                 <div style={{ fontSize: 32, marginBottom: 12 }}>{v.icon}</div>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111827", marginBottom: 6 }}>{v.title}</h3>
                 <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.65 }}>{v.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Team */}
-        <div style={{ marginBottom: "3.5rem" }}>
-          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-            <div style={{ fontSize: 11, color: "#CC2222", fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>האנשים שעושים את זה</div>
-            <h2 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 900, color: "#111827" }}>הצוות שלנו</h2>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 16 }}>
-            {TEAM.map((m, i) => (
-              <div key={i} style={{ background: "#fff", borderRadius: 4, padding: "1.5rem", border: "1px solid #e5e7eb", textAlign: "center", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-                <div style={{ fontSize: 48, marginBottom: 10 }}>{m.emoji}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{m.name}</div>
-                <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>{m.role}</div>
               </div>
             ))}
           </div>
