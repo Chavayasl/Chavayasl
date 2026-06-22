@@ -54,12 +54,12 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
     set("ageGroups", cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]);
   };
 
-  // עזרי מערכים
+  // עזרי מערכים — שימוש בעדכון פונקציונלי (קורא את הרשימה העדכנית, תומך בהעלאה מרובה)
   const arr = <T,>(k: keyof FormData): T[] => (form[k] as T[] | undefined) || [];
-  const addTo = <T,>(k: keyof FormData, item: T) => set(k, [...arr<T>(k), item]);
-  const removeAt = (k: keyof FormData, i: number) => set(k, arr(k).filter((_, j) => j !== i));
+  const addTo = <T,>(k: keyof FormData, item: T) => setForm(f => ({ ...f, [k]: [...((f[k] as T[] | undefined) || []), item] }));
+  const removeAt = (k: keyof FormData, i: number) => setForm(f => ({ ...f, [k]: ((f[k] as unknown[] | undefined) || []).filter((_, j) => j !== i) }));
   const updateAt = <T,>(k: keyof FormData, i: number, patch: Partial<T>) =>
-    set(k, arr<T>(k).map((it, j) => (j === i ? { ...it, ...patch } : it)));
+    setForm(f => ({ ...f, [k]: ((f[k] as T[] | undefined) || []).map((it, j) => (j === i ? { ...it, ...patch } : it)) }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,10 +257,10 @@ function UploadButton({ accept, folder, label, multiple, onUrl }: { accept: stri
           const files = Array.from(e.target.files || []);
           if (!files.length) return;
           setBusy(true);
-          for (const f of files) {
-            const url = await uploadToServer(f, folder);
-            if (url) onUrl(url); else alert("שגיאה בהעלאת קובץ");
-          }
+          const urls = await Promise.all(files.map(f => uploadToServer(f, folder)));
+          let failed = 0;
+          for (const u of urls) { if (u) onUrl(u); else failed++; }
+          if (failed) alert(`${failed} קבצים נכשלו בהעלאה`);
           setBusy(false);
           e.target.value = "";
         }} />
