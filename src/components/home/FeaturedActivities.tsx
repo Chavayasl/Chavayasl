@@ -87,7 +87,7 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
     activities = allActivities.filter(a => a.categories?.includes(group.id) || group.slugs.includes(a.slug));
   }
   if (ageFilter) {
-    activities = activities.filter(a => (a.ageGroups as string[] | undefined)?.includes(ageFilter));
+    activities = activities.filter(a => a.ageGroups?.includes(ageFilter) || a.ageGroups?.includes("multi"));
   }
 
   // מעבר טאב — בקטגוריית חגים בוחרים אוטומטית את החג הרלוונטי לתאריך

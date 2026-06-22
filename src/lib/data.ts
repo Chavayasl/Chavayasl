@@ -23,7 +23,7 @@ export interface Activity {
   emoji: string;
   timeline: { timeRange: string; title: string; description: string }[];
   includes: string[];
-  ageGroups?: ("gan" | "yesodi" | "hatam" | "afternoon")[];
+  ageGroups?: string[]; // gan | yesodi | hatam | multi (רב גילאי)
   /** קטגוריות ראשיות אליהן שייכת הפעילות (holidays/science/extreme/shows) */
   categories?: string[];
 

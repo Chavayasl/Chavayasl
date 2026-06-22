@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { SEASON_LABELS, TYPE_LABELS, type Activity } from "@/lib/data";
+import { ytId, ytEmbed, ytThumb } from "@/lib/media";
 import { useState, useEffect, useCallback } from "react";
 
 const WA_PHONE = "972556671997";
@@ -71,8 +72,14 @@ export default function ActivityView({ a }: { a: Activity }) {
           {/* עמודה ימנית (RTL ראשונה): וידאו + תיאור + פרטים */}
           <div>
             <div style={{ position: "relative", aspectRatio: "16/10", borderRadius: 16, overflow: "hidden", background: "#000", boxShadow: "0 16px 44px rgba(15,23,42,0.16)", marginBottom: 22 }}>
-              <video src={heroVideo} controls autoPlay muted loop playsInline
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              {ytId(heroVideo) ? (
+                <iframe src={ytEmbed(ytId(heroVideo)!, { autoplay: true, mute: true, loop: true, controls: false })}
+                  title="וידאו" allow="autoplay; encrypted-media" allowFullScreen
+                  style={{ width: "100%", height: "100%", border: "none", display: "block" }} />
+              ) : (
+                <video src={heroVideo} controls autoPlay muted loop playsInline
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              )}
             </div>
             <h2 className="sec-title" style={{ fontSize: 26, marginBottom: 12 }}>תיאור הפעילות</h2>
             <p style={{ fontSize: 15.5, lineHeight: 1.8, color: "#475569", marginBottom: 22 }}>{description}</p>
@@ -284,11 +291,13 @@ function ShareButton({ title, text }: { title: string; text: string }) {
 
 function VideoCard({ title, src, poster, accent }: { title: string; src: string; poster?: string; accent: string }) {
   const [play, setPlay] = useState(false);
+  const yt = ytId(src);
+  const thumb = poster || (yt ? ytThumb(yt) : null);
   return (
     <>
       <button onClick={() => setPlay(true)} style={{ position: "relative", padding: 0, border: "none", borderRadius: 14, overflow: "hidden", cursor: "pointer", aspectRatio: "16/10", background: "#0F172A", width: "100%" }}>
-        {poster
-          ? <img src={poster} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
+        {thumb
+          ? <img src={thumb} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
           : <video src={src} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />}
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <span style={{ width: 54, height: 54, borderRadius: "50%", background: "rgba(255,255,255,0.92)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: accent, paddingInlineStart: 3 }}>▶</span>
@@ -297,7 +306,9 @@ function VideoCard({ title, src, poster, accent }: { title: string; src: string;
       </button>
       {play && (
         <Lightbox onClose={() => setPlay(false)}>
-          <video src={src} controls autoPlay playsInline style={{ maxWidth: "92vw", maxHeight: "88vh", borderRadius: 12, background: "#000" }} />
+          {yt
+            ? <iframe src={ytEmbed(yt, { autoplay: true })} title={title} allow="autoplay; encrypted-media" allowFullScreen style={{ width: "min(92vw, 900px)", aspectRatio: "16/9", maxHeight: "88vh", border: "none", borderRadius: 12, background: "#000" }} />
+            : <video src={src} controls autoPlay playsInline style={{ maxWidth: "92vw", maxHeight: "88vh", borderRadius: 12, background: "#000" }} />}
         </Lightbox>
       )}
     </>
@@ -306,12 +317,14 @@ function VideoCard({ title, src, poster, accent }: { title: string; src: string;
 
 function VideoRow({ name, role, src, poster, duration, accent }: { name: string; role: string; src: string; poster?: string; duration?: string; accent: string }) {
   const [play, setPlay] = useState(false);
+  const yt = ytId(src);
+  const thumb = poster || (yt ? ytThumb(yt) : null);
   return (
     <>
       <button onClick={() => setPlay(true)} style={{ display: "flex", alignItems: "center", gap: 11, padding: 0, border: "none", background: "none", cursor: "pointer", width: "100%", textAlign: "start" }}>
         <div style={{ position: "relative", width: 64, height: 48, borderRadius: 9, overflow: "hidden", flexShrink: 0, background: "#0F172A" }}>
-          {poster
-            ? <img src={poster} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
+          {thumb
+            ? <img src={thumb} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
             : <video src={src} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />}
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.92)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: accent, paddingInlineStart: 2 }}>▶</span>
@@ -325,7 +338,9 @@ function VideoRow({ name, role, src, poster, duration, accent }: { name: string;
       </button>
       {play && (
         <Lightbox onClose={() => setPlay(false)}>
-          <video src={src} controls autoPlay playsInline style={{ maxWidth: "92vw", maxHeight: "88vh", borderRadius: 12, background: "#000" }} />
+          {yt
+            ? <iframe src={ytEmbed(yt, { autoplay: true })} title={name} allow="autoplay; encrypted-media" allowFullScreen style={{ width: "min(92vw, 900px)", aspectRatio: "16/9", maxHeight: "88vh", border: "none", borderRadius: 12, background: "#000" }} />
+            : <video src={src} controls autoPlay playsInline style={{ maxWidth: "92vw", maxHeight: "88vh", borderRadius: 12, background: "#000" }} />}
         </Lightbox>
       )}
     </>

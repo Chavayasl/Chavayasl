@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SEASON_LABELS, type Activity } from "@/lib/data";
+import { ytId, ytThumb } from "@/lib/media";
 
 type FormData = Omit<Activity, "id" | "timeline" | "includes"> & { id?: string };
 
@@ -13,9 +14,16 @@ const DEFAULTS: FormData = {
   grad1: "#CC2222", grad2: "#8B1A1A", grad1h: "#a81b1b", grad2h: "#6b1414",
   icon: "", emoji: "🎯",
   gallery: [], videos: [], videoTestimonials: [], waMessages: [], audioTestimonials: [],
+  ageGroups: [],
 };
 
 const LABEL: Record<string, string> = { WORKSHOP: "סדנה", SHOW: "הצגה", GAME: "משחק", FOOD: "בישול" };
+const AGE_OPTIONS = [
+  { id: "gan", label: "גנים" },
+  { id: "yesodi", label: "יסודי" },
+  { id: "hatam", label: "חטיבה" },
+  { id: "multi", label: "רב גילאי" },
+];
 
 // ─── העלאת קובץ ל-Supabase Storage ───
 async function uploadToServer(file: File, folder: string): Promise<string | null> {
@@ -41,6 +49,10 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
   const set = (k: keyof FormData, v: unknown) => setForm(f => ({ ...f, [k]: v }));
   const toggleSeason = (s: string) =>
     set("seasons", form.seasons.includes(s) ? form.seasons.filter(x => x !== s) : [...form.seasons, s]);
+  const toggleAge = (id: string) => {
+    const cur = form.ageGroups || [];
+    set("ageGroups", cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]);
+  };
 
   // עזרי מערכים
   const arr = <T,>(k: keyof FormData): T[] => (form[k] as T[] | undefined) || [];
@@ -92,10 +104,26 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
         <div>{label("משך (דקות)")}<input type="number" style={inputStyle} value={form.duration} onChange={e => set("duration", +e.target.value)} /></div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
-        <div>{label("גיל מינ'")}<input type="number" style={inputStyle} value={form.minAge} onChange={e => set("minAge", +e.target.value)} /></div>
-        <div>{label("גיל מקס'")}<input type="number" style={inputStyle} value={form.maxAge} onChange={e => set("maxAge", +e.target.value)} /></div>
-        <div>{label("מקס' משתתפים")}<input type="number" style={inputStyle} value={form.maxParticipants} onChange={e => set("maxParticipants", +e.target.value)} /></div>
+      <div>
+        {label("מקס' משתתפים")}
+        <input type="number" style={{ ...inputStyle, maxWidth: 200 }} value={form.maxParticipants} onChange={e => set("maxParticipants", +e.target.value)} />
+      </div>
+
+      <div>
+        {label("קהל יעד / גילאים")}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {AGE_OPTIONS.map(o => {
+            const on = (form.ageGroups || []).includes(o.id);
+            return (
+              <button key={o.id} type="button" onClick={() => toggleAge(o.id)} style={{
+                padding: "8px 18px", borderRadius: 3, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Rubik, sans-serif",
+                border: `1.5px solid ${on ? "#2563EB" : "#e2e8f0"}`,
+                background: on ? "#eff6ff" : "#fff",
+                color: on ? "#2563EB" : "#64748b",
+              }}>{o.label}</button>
+            );
+          })}
+        </div>
       </div>
 
       <div>{label("תיאור קצר *")}<input required style={inputStyle} value={form.shortDescription} onChange={e => set("shortDescription", e.target.value)} placeholder="תיאור קצר לכרטיס" /></div>
@@ -249,13 +277,36 @@ function SingleImage({ src, folder, onChange }: { src?: string; folder: string; 
   ) : <UploadButton accept="image/*" folder={folder} label="📤 העלה תמונה" onUrl={onChange} />;
 }
 
+const ytBadge: React.CSSProperties = { position: "absolute", top: 4, insetInlineStart: 4, background: "rgba(204,34,34,0.92)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4 };
+
+function YtLink({ onAdd }: { onAdd: (url: string) => void }) {
+  const [link, setLink] = useState("");
+  const valid = !!ytId(link);
+  return (
+    <div style={{ display: "flex", gap: 6 }}>
+      <input value={link} onChange={e => setLink(e.target.value)} placeholder="או הדבק קישור יוטיוב"
+        style={{ flex: 1, minWidth: 150, padding: "8px 10px", borderRadius: 6, border: "1.5px solid #e2e8f0", fontSize: 12.5, fontFamily: "Rubik, sans-serif", direction: "ltr" }} />
+      <button type="button" disabled={!valid} onClick={() => { onAdd(link.trim()); setLink(""); }}
+        style={{ padding: "8px 14px", borderRadius: 6, border: "none", background: valid ? "#CC2222" : "#e2e8f0", color: valid ? "#fff" : "#94a3b8", fontSize: 12.5, fontWeight: 700, cursor: valid ? "pointer" : "not-allowed", fontFamily: "Rubik, sans-serif", whiteSpace: "nowrap" }}>+ הוסף</button>
+    </div>
+  );
+}
+
 function SingleVideo({ src, folder, onChange }: { src?: string; folder: string; onChange: (url: string | undefined) => void }) {
-  return src ? (
-    <div style={{ position: "relative", width: 200, borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0" }}>
-      <video src={src} controls style={{ width: "100%", display: "block", background: "#000" }} />
+  const yt = ytId(src);
+  if (src) return (
+    <div style={{ position: "relative", width: 220, borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0" }}>
+      {yt ? <img src={ytThumb(yt)} alt="" style={{ width: "100%", display: "block" }} /> : <video src={src} controls style={{ width: "100%", display: "block", background: "#000" }} />}
+      {yt && <span style={ytBadge}>▶ YouTube</span>}
       <button type="button" onClick={() => onChange(undefined)} style={removeBtn}>✕</button>
     </div>
-  ) : <UploadButton accept="video/*" folder={folder} label="🎬 העלה וידאו" onUrl={onChange} />;
+  );
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 380 }}>
+      <UploadButton accept="video/*" folder={folder} label="🎬 העלה וידאו" onUrl={onChange} />
+      <YtLink onAdd={url => onChange(url)} />
+    </div>
+  );
 }
 
 function Gallery({ images, onAdd, onRemove }: { images: string[]; onAdd: (url: string) => void; onRemove: (i: number) => void }) {
@@ -275,15 +326,24 @@ function Gallery({ images, onAdd, onRemove }: { images: string[]; onAdd: (url: s
 function VideoList({ items, onAdd, onRemove, onTitle }: { items: { title: string; src: string }[]; onAdd: (src: string) => void; onRemove: (i: number) => void; onTitle: (i: number, t: string) => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {items.map((v, i) => (
-        <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", background: "#f8fafc", padding: 8, borderRadius: 8 }}>
-          <video src={v.src} style={{ width: 80, height: 56, objectFit: "cover", borderRadius: 6, background: "#000", flexShrink: 0 }} />
-          <input value={v.title} onChange={e => onTitle(i, e.target.value)} placeholder="כותרת הסרטון"
-            style={{ flex: 1, padding: "8px 10px", borderRadius: 6, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "Rubik, sans-serif" }} />
-          <button type="button" onClick={() => onRemove(i)} style={{ ...removeBtn, position: "static", flexShrink: 0 }}>✕</button>
-        </div>
-      ))}
-      <UploadButton accept="video/*" folder="videos" label="🎬 הוסף סרטון" onUrl={onAdd} />
+      {items.map((v, i) => {
+        const yt = ytId(v.src);
+        return (
+          <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", background: "#f8fafc", padding: 8, borderRadius: 8 }}>
+            <div style={{ position: "relative", width: 80, height: 56, flexShrink: 0 }}>
+              {yt ? <img src={ytThumb(yt)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} /> : <video src={v.src} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6, background: "#000" }} />}
+              {yt && <span style={ytBadge}>▶</span>}
+            </div>
+            <input value={v.title} onChange={e => onTitle(i, e.target.value)} placeholder="כותרת הסרטון"
+              style={{ flex: 1, padding: "8px 10px", borderRadius: 6, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "Rubik, sans-serif" }} />
+            <button type="button" onClick={() => onRemove(i)} style={{ ...removeBtn, position: "static", flexShrink: 0 }}>✕</button>
+          </div>
+        );
+      })}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <UploadButton accept="video/*" folder="videos" label="🎬 העלה סרטון" onUrl={onAdd} />
+        <YtLink onAdd={onAdd} />
+      </div>
     </div>
   );
 }
@@ -292,15 +352,24 @@ function TestimonialVideos({ items, onAdd, onRemove, onField }: { items: { name:
   const ist: React.CSSProperties = { flex: 1, padding: "8px 10px", borderRadius: 6, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "Rubik, sans-serif" };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {items.map((t, i) => (
-        <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", background: "#f8fafc", padding: 8, borderRadius: 8 }}>
-          <video src={t.src} style={{ width: 80, height: 56, objectFit: "cover", borderRadius: 6, background: "#000", flexShrink: 0 }} />
-          <input value={t.name} onChange={e => onField(i, { name: e.target.value })} placeholder="שם" style={ist} />
-          <input value={t.role} onChange={e => onField(i, { role: e.target.value })} placeholder="תפקיד" style={ist} />
-          <button type="button" onClick={() => onRemove(i)} style={{ ...removeBtn, position: "static", flexShrink: 0 }}>✕</button>
-        </div>
-      ))}
-      <UploadButton accept="video/*" folder="testimonials" label="🎬 הוסף סרטון המלצה" onUrl={onAdd} />
+      {items.map((t, i) => {
+        const yt = ytId(t.src);
+        return (
+          <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", background: "#f8fafc", padding: 8, borderRadius: 8 }}>
+            <div style={{ position: "relative", width: 80, height: 56, flexShrink: 0 }}>
+              {yt ? <img src={ytThumb(yt)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} /> : <video src={t.src} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6, background: "#000" }} />}
+              {yt && <span style={ytBadge}>▶</span>}
+            </div>
+            <input value={t.name} onChange={e => onField(i, { name: e.target.value })} placeholder="שם" style={ist} />
+            <input value={t.role} onChange={e => onField(i, { role: e.target.value })} placeholder="תפקיד" style={ist} />
+            <button type="button" onClick={() => onRemove(i)} style={{ ...removeBtn, position: "static", flexShrink: 0 }}>✕</button>
+          </div>
+        );
+      })}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <UploadButton accept="video/*" folder="testimonials" label="🎬 העלה סרטון המלצה" onUrl={onAdd} />
+        <YtLink onAdd={onAdd} />
+      </div>
     </div>
   );
 }
