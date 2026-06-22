@@ -27,17 +27,10 @@ export default function ActivityView({ a }: { a: Activity }) {
     { icon: "⭐", title: "מדריכים מקצועיים" },
   ];
 
-  const videoTestimonials = a.videoTestimonials?.length ? a.videoTestimonials : [
-    { name: "מנהל המוסד", role: "בית ספר", src: heroVideo, duration: "1:12" },
-    { name: "רכזת חברתית", role: "יסודי", src: heroVideo, duration: "0:58" },
-    { name: "מורה", role: "כיתה ד'", src: heroVideo, duration: "1:25" },
-  ];
-  const waMessages = a.waMessages?.length ? a.waMessages : [
-    { text: "וואו!! הפעילות הייתה פשוט מעולה! הילדים נהנו בטירוף והתלהבו 🙌 תודה רבה!", time: "11:32" },
-    { text: "הגיעו אלינו עם כל הציוד, מדריך מקצועי וסבלני, ממליצה בחום 💯", time: "12:15" },
-    { text: "איזו חוויה!!! הילדים לא רצו שזה ייגמר 😍 תודה רבה על הכל!", time: "13:37" },
-  ];
-  const audioTestimonials = a.audioTestimonials?.length ? a.audioTestimonials : [];
+  const videoTestimonials = a.videoTestimonials || [];
+  const waMessages = a.waMessages || [];
+  const audioTestimonials = a.audioTestimonials || [];
+  const hasTestimonials = videoTestimonials.length > 0 || waMessages.length > 0 || audioTestimonials.length > 0;
 
   const gives = a.includes;
   const giveIcons = ["🎁", "🎨", "📦", "🧑‍🏫", "👥", "🛡️", "✨", "🎯"];
@@ -141,42 +134,45 @@ export default function ActivityView({ a }: { a: Activity }) {
         </section>
       )}
 
-      {/* ═══════════════ מה אומרים עלינו (3 עמודות) ═══════════════ */}
-      <section style={{ background: "#fafafb", borderTop: "1px solid #eef0f3", borderBottom: "1px solid #eef0f3" }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "3rem 1.5rem" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <span className="sec-label" style={{ borderColor: "#CC2222", color: "#CC2222" }}>תגובות מהשטח</span>
-            <h2 className="sec-title" style={{ marginTop: 6, fontSize: 30 }}>מה אומרים עלינו?</h2>
-          </div>
-          <div className="reviews-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, alignItems: "start" }}>
-
-            {/* הקלטות וידאו */}
-            <ReviewCol title="הקלטות וידאו" icon="🎬">
-              {videoTestimonials.map((t, i) => <VideoRow key={i} {...t} accent={a.grad1} />)}
-              <ColFooter>צפו בעוד המלצות</ColFooter>
-            </ReviewCol>
-
-            {/* הודעות וואטסאפ */}
-            <ReviewCol title="הודעות וואטסאפ" icon="💬">
-              {waMessages.map((m, i) => (
-                <div key={i} style={{ background: "#e7f8ec", border: "1px solid #c9efd5", borderRadius: "14px 14px 14px 4px", padding: "11px 13px", position: "relative" }}>
-                  <p style={{ fontSize: 13.5, color: "#1f2937", lineHeight: 1.6 }}>{m.text}</p>
-                  <div style={{ fontSize: 10.5, color: "#94a3b8", textAlign: "start", marginTop: 4 }}>{m.time} ✓✓</div>
-                </div>
-              ))}
-              <ColFooter>לראות עוד הודעות</ColFooter>
-            </ReviewCol>
-
-            {/* הקלטות שמע */}
-            <ReviewCol title="הקלטות שמע" icon="🎤">
-              {audioTestimonials.length > 0
-                ? audioTestimonials.map((t, i) => <AudioRow key={i} {...t} />)
-                : <EmptyHint>הקלטות הקול יתווספו בקרוב</EmptyHint>}
-              {audioTestimonials.length > 0 && <ColFooter>עוד הקלטות שמע</ColFooter>}
-            </ReviewCol>
-          </div>
-        </div>
-      </section>
+      {/* ═══════════════ מה אומרים עלינו — רק עמודות עם תוכן ═══════════════ */}
+      {hasTestimonials && (() => {
+        const cols: React.ReactNode[] = [];
+        if (videoTestimonials.length > 0) cols.push(
+          <ReviewCol key="video" title="סרטוני המלצה" icon="🎬">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, maxHeight: videoTestimonials.length > 1 ? 420 : undefined, overflowY: videoTestimonials.length > 1 ? "auto" : "visible", paddingInlineEnd: videoTestimonials.length > 1 ? 4 : 0 }}>
+              {videoTestimonials.map((t, i) => <VideoCard key={i} title={t.name} subtitle={t.role} src={t.src} poster={t.poster} accent={a.grad1} />)}
+            </div>
+          </ReviewCol>
+        );
+        if (waMessages.length > 0) cols.push(
+          <ReviewCol key="wa" title="הודעות וואטסאפ" icon="💬">
+            {waMessages.map((m, i) => (
+              <div key={i} style={{ background: "#e7f8ec", border: "1px solid #c9efd5", borderRadius: "14px 14px 14px 4px", padding: "11px 13px" }}>
+                <p style={{ fontSize: 13.5, color: "#1f2937", lineHeight: 1.6 }}>{m.text}</p>
+                <div style={{ fontSize: 10.5, color: "#94a3b8", textAlign: "start", marginTop: 4 }}>{m.time} ✓✓</div>
+              </div>
+            ))}
+          </ReviewCol>
+        );
+        if (audioTestimonials.length > 0) cols.push(
+          <ReviewCol key="audio" title="הקלטות שמע" icon="🎤">
+            {audioTestimonials.map((t, i) => <AudioRow key={i} {...t} />)}
+          </ReviewCol>
+        );
+        return (
+          <section style={{ background: "#fafafb", borderTop: "1px solid #eef0f3", borderBottom: "1px solid #eef0f3" }}>
+            <div style={{ maxWidth: 1180, margin: "0 auto", padding: "3rem 1.5rem" }}>
+              <div style={{ textAlign: "center", marginBottom: 28 }}>
+                <span className="sec-label" style={{ borderColor: "#CC2222", color: "#CC2222" }}>תגובות מהשטח</span>
+                <h2 className="sec-title" style={{ marginTop: 6, fontSize: 30 }}>מה אומרים עלינו?</h2>
+              </div>
+              <div className="reviews-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${cols.length},1fr)`, gap: 18, alignItems: "start", maxWidth: cols.length < 3 ? 820 : undefined, margin: cols.length < 3 ? "0 auto" : undefined }}>
+                {cols}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ═══════════════ מה מקבלים ═══════════════ */}
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "3.2rem 1.5rem" }}>
@@ -252,14 +248,6 @@ function ReviewCol({ title, icon, children }: { title: string; icon: string; chi
   );
 }
 
-function ColFooter({ children }: { children: React.ReactNode }) {
-  return <div style={{ textAlign: "center", fontSize: 12.5, fontWeight: 700, color: "#CC2222", paddingTop: 4 }}>{children} ←</div>;
-}
-
-function EmptyHint({ children }: { children: React.ReactNode }) {
-  return <div style={{ textAlign: "center", fontSize: 12.5, color: "#94a3b8", padding: "20px 0" }}>{children}</div>;
-}
-
 function ShareButton({ title, text }: { title: string; text: string }) {
   const [done, setDone] = useState(false);
   const share = async (e: React.MouseEvent) => {
@@ -305,7 +293,7 @@ function HeroVideo({ src }: { src: string }) {
   );
 }
 
-function VideoCard({ title, src, poster, accent }: { title: string; src: string; poster?: string; accent: string }) {
+function VideoCard({ title, subtitle, src, poster, accent }: { title: string; subtitle?: string; src: string; poster?: string; accent: string }) {
   const [play, setPlay] = useState(false);
   const yt = ytId(src);
   const thumb = poster || (yt ? ytThumb(yt) : null);
@@ -318,7 +306,10 @@ function VideoCard({ title, src, poster, accent }: { title: string; src: string;
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <span style={{ width: 54, height: 54, borderRadius: "50%", background: "rgba(255,255,255,0.92)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: accent, paddingInlineStart: 3 }}>▶</span>
         </div>
-        <div style={{ position: "absolute", bottom: 0, insetInlineStart: 0, insetInlineEnd: 0, padding: "26px 12px 10px", background: "linear-gradient(to top,rgba(0,0,0,0.75),transparent)", color: "#fff", fontSize: 14, fontWeight: 700, textAlign: "start" }}>{title}</div>
+        <div style={{ position: "absolute", bottom: 0, insetInlineStart: 0, insetInlineEnd: 0, padding: "26px 12px 10px", background: "linear-gradient(to top,rgba(0,0,0,0.75),transparent)", color: "#fff", textAlign: "start" }}>
+          <div style={{ fontSize: 14, fontWeight: 700 }}>{title}</div>
+          {subtitle && <div style={{ fontSize: 12, opacity: 0.8 }}>{subtitle}</div>}
+        </div>
       </button>
       {play && (
         <Lightbox onClose={() => setPlay(false)}>

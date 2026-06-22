@@ -14,7 +14,7 @@ const DEFAULTS: FormData = {
   grad1: "#CC2222", grad2: "#8B1A1A", grad1h: "#a81b1b", grad2h: "#6b1414",
   icon: "", emoji: "🎯",
   gallery: [], videos: [], videoTestimonials: [], waMessages: [], audioTestimonials: [],
-  ageGroups: [],
+  ageGroups: [], categories: [],
 };
 
 const LABEL: Record<string, string> = { WORKSHOP: "סדנה", SHOW: "הצגה", GAME: "משחק", FOOD: "בישול" };
@@ -23,6 +23,12 @@ const AGE_OPTIONS = [
   { id: "yesodi", label: "יסודי" },
   { id: "hatam", label: "חטיבה" },
   { id: "multi", label: "רב גילאי" },
+];
+const CATEGORY_OPTIONS = [
+  { id: "holidays", label: "חגים ומועדים" },
+  { id: "science", label: "מדעים וטבע" },
+  { id: "extreme", label: "אקסטרים" },
+  { id: "shows", label: "מופעים" },
 ];
 
 // ─── העלאת קובץ ל-Supabase Storage ───
@@ -49,6 +55,10 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
   const set = (k: keyof FormData, v: unknown) => setForm(f => ({ ...f, [k]: v }));
   const toggleSeason = (s: string) =>
     set("seasons", form.seasons.includes(s) ? form.seasons.filter(x => x !== s) : [...form.seasons, s]);
+  const toggleCategory = (id: string) => {
+    const cur = form.categories || [];
+    set("categories", cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]);
+  };
   const toggleAge = (id: string) => {
     const cur = form.ageGroups || [];
     const LAYERS = ["gan", "yesodi", "hatam"];
@@ -169,8 +179,24 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
           onTitle={(i, title) => updateAt<{ title: string; src: string }>("videos", i, { title })} />
       </div>
 
-      {/* ── קטגוריות ── */}
-      {sectionTitle("🗂️ קטגוריות (חגים / עונות)")}
+      {/* ── קטגוריות ראשיות ── */}
+      {sectionTitle("🗂️ קטגוריות ראשיות (בחר אחת או יותר)")}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {CATEGORY_OPTIONS.map(c => {
+          const on = (form.categories || []).includes(c.id);
+          return (
+            <button key={c.id} type="button" onClick={() => toggleCategory(c.id)} style={{
+              padding: "8px 18px", borderRadius: 3, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Rubik, sans-serif",
+              border: `1.5px solid ${on ? "#CC2222" : "#e2e8f0"}`,
+              background: on ? "#CC2222" : "#fff",
+              color: on ? "#fff" : "#64748b",
+            }}>{c.label}</button>
+          );
+        })}
+      </div>
+
+      {/* ── חגים / עונות (תוויות) ── */}
+      {sectionTitle("📅 חגים / עונות (תוויות — בחר אחת או יותר)")}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {Object.entries(SEASON_LABELS).map(([s, l]) => (
           <button key={s} type="button" onClick={() => toggleSeason(s)} style={{
