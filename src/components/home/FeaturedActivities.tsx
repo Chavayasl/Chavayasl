@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ACTIVITIES, TYPE_LABELS, type Activity } from "@/lib/data";
-import { DEFAULT_CATEGORY_TREE, type CategoryGroup } from "@/lib/categories";
+import { DEFAULT_CATEGORY_TREE, AGE_FILTERS, type CategoryGroup } from "@/lib/categories";
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -61,15 +61,20 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
   const { ref, v } = useReveal();
   const [groupIdx, setGroupIdx] = useState(0);
   const [activeIdx, setActiveIdx] = useState(-1); // -1 = הכל
+  const [ageFilter, setAgeFilter] = useState<string | null>(null); // null = כל הגילאים
 
-  const groups = categoryTree.length ? categoryTree : DEFAULT_CATEGORY_TREE;
+  // הגיל הוא מסנן רוחבי — מסירים אותו מהקטגוריות הראשיות
+  const groups = (categoryTree.length ? categoryTree : DEFAULT_CATEGORY_TREE).filter(g => g.id !== "age");
   const subs = groups[groupIdx]?.subs || [];
 
-  // הפעילויות המסוננות
+  // הפעילויות המסוננות — קטגוריה + תווית + גיל
   let activities: Activity[] = allActivities;
   if (activeIdx >= 0 && subs[activeIdx]) {
     const slugs = subs[activeIdx].slugs;
     activities = slugs.map(s => allActivities.find(a => a.slug === s)).filter(Boolean) as Activity[];
+  }
+  if (ageFilter) {
+    activities = activities.filter(a => (a.ageGroups as string[] | undefined)?.includes(ageFilter));
   }
 
   const handleGroup = (i: number) => { setGroupIdx(i); setActiveIdx(-1); };
@@ -95,7 +100,16 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
           ))}
         </div>
 
-        {/* Filter chips: הכל + קטגוריות */}
+        {/* מסנן גיל (רוחבי) */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: "1rem" }}>
+          <span style={{ fontSize: 12.5, color: "#94a3b8", fontWeight: 600 }}>גיל:</span>
+          <Chip active={!ageFilter} color="#2563EB" onClick={() => setAgeFilter(null)}>כל הגילאים</Chip>
+          {AGE_FILTERS.map(af => (
+            <Chip key={af.id} active={ageFilter === af.id} color="#2563EB" onClick={() => setAgeFilter(af.id)}>{af.label}</Chip>
+          ))}
+        </div>
+
+        {/* Filter chips: הכל + תת-קטגוריות */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: "1.25rem" }}>
           <Chip active={activeIdx === -1} onClick={() => setActiveIdx(-1)}>הכל</Chip>
           {subs.map((item, i) => (
@@ -125,12 +139,12 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
   );
 }
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({ active, onClick, children, color = "#CC2222" }: { active: boolean; onClick: () => void; children: React.ReactNode; color?: string }) {
   return (
     <button onClick={onClick} style={{
       padding: "8px 18px", borderRadius: 3, fontSize: 13, fontWeight: 600,
-      border: `1.5px solid ${active ? "#CC2222" : "#e2e8f0"}`,
-      background: active ? "#CC2222" : "#fff",
+      border: `1.5px solid ${active ? color : "#e2e8f0"}`,
+      background: active ? color : "#fff",
       color: active ? "#fff" : "#475569",
       cursor: "pointer", fontFamily: "Rubik, sans-serif", transition: "all 0.15s",
     }}>{children}</button>

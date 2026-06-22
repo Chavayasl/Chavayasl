@@ -1,4 +1,4 @@
-import { HOLIDAY_CATEGORIES, MONTH_CATEGORIES, AGE_CATEGORIES, ACTIVITIES } from "./data";
+import { HOLIDAY_CATEGORIES, MONTH_CATEGORIES } from "./data";
 
 // ─── מבנה קטגוריות: קבוצה (קטגוריה) → תת-קטגוריות (תוויות) → פעילויות (slugs) ───
 export interface SubCategory {
@@ -24,10 +24,13 @@ export const DEFAULT_CATEGORY_TREE: CategoryGroup[] = [
     id: "months", label: "חודשי השנה",
     subs: MONTH_CATEGORIES.map(c => ({ id: c.id, label: c.label, slugs: [...c.slugs] })),
   },
-  {
-    id: "age", label: "לפי גיל / קהל",
-    subs: AGE_CATEGORIES.map(c => ({ id: c.id, label: c.label, emoji: c.emoji, slugs: ACTIVITIES.filter(a => a.ageGroups?.includes(c.id)).map(a => a.slug) })),
-  },
+];
+
+// מסנן גיל רוחבי (לא קטגוריה — מסונן לפי שדה ageGroups של הפעילות)
+export const AGE_FILTERS: { id: string; label: string }[] = [
+  { id: "gan", label: "גנים" },
+  { id: "yesodi", label: "יסודי" },
+  { id: "hatam", label: "חטיבה" },
 ];
 
 export function newId() {
