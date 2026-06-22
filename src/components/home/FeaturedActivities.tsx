@@ -44,7 +44,7 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
         <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", marginBottom: 5 }}>{a.name}</h3>
         <p style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.55, marginBottom: 12 }}>{a.shortDescription}</p>
         <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
-          {[{ t: "⏱", v: `${a.duration} דק'` }, { t: "👥", v: `עד ${a.maxParticipants}` }, { t: "🎂", v: `${a.minAge}–${a.maxAge}` }].map((m, j) => (
+          {[{ t: "⏱", v: `${a.duration} דק'` }, { t: "👥", v: `עד ${a.maxParticipants}` }, { t: "🎂", v: a.maxAge ? `${a.minAge}–${a.maxAge}` : `${a.minAge}+` }].map((m, j) => (
             <span key={j} style={{ fontSize: 11, color: "#94a3b8" }}>{m.t} {m.v}</span>
           ))}
         </div>
@@ -68,21 +68,23 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
   const group = tabIdx === 0 ? null : groups[tabIdx - 1];
   const subs = group?.subs || [];
 
-  const bySlugs = (slugs: string[]) => slugs.map(s => allActivities.find(a => a.slug === s)).filter(Boolean) as Activity[];
-
-  // הפעילויות המסוננות — קטגוריה + תווית + גיל
+  // הפעילויות המסוננות — לפי שדות הפעילות (categories/seasons), עם תאימות לאחור ל-slugs
   let activities: Activity[];
   if (!group) {
     activities = allActivities; // "הכל"
   } else if (subs.length > 0) {
+    // קטגוריה עם תוויות (חגים)
     if (activeIdx >= 0 && subs[activeIdx]) {
-      activities = bySlugs(subs[activeIdx].slugs);
+      const sub = subs[activeIdx];
+      activities = allActivities.filter(a => a.seasons?.includes(sub.id) || sub.slugs.includes(a.slug));
     } else {
-      const set = new Set([...group.slugs, ...subs.flatMap(s => s.slugs)]);
-      activities = allActivities.filter(a => set.has(a.slug));
+      const holidayIds = subs.map(s => s.id);
+      const allSlugs = new Set([...group.slugs, ...subs.flatMap(s => s.slugs)]);
+      activities = allActivities.filter(a => a.seasons?.some(s => holidayIds.includes(s)) || a.categories?.includes(group.id) || allSlugs.has(a.slug));
     }
   } else {
-    activities = bySlugs(group.slugs);
+    // קטגוריה תמטית
+    activities = allActivities.filter(a => a.categories?.includes(group.id) || group.slugs.includes(a.slug));
   }
   if (ageFilter) {
     activities = activities.filter(a => (a.ageGroups as string[] | undefined)?.includes(ageFilter));

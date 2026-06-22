@@ -24,6 +24,8 @@ export interface Activity {
   timeline: { timeRange: string; title: string; description: string }[];
   includes: string[];
   ageGroups?: ("gan" | "yesodi" | "hatam" | "afternoon")[];
+  /** קטגוריות ראשיות אליהן שייכת הפעילות (holidays/science/extreme/shows) */
+  categories?: string[];
 
   // ─── מדיה לדף המכירה (אופציונלי — אם ריק, נטענות ברירות מחדל) ───
   /** תמונה ראשית (כרטיס + ראש העמוד) */
