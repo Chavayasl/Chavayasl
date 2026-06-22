@@ -8,13 +8,13 @@ export function Footer() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr", gap: "2.5rem", marginBottom: "3rem" }} className="footer-grid">
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <Image src="/logo-hero.png" alt="לוגו" width={42} height={42} style={{ borderRadius: "50%" }} />
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, textDecoration: "none", color: "inherit" }}>
+              <Image src="/logo-hero.png" alt="חוויה סביב השנה" width={42} height={42} style={{ borderRadius: "50%" }} />
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800 }}>חוויה סביב השנה</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>חוויה סביב השנה</div>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>פעילויות לבתי ספר וגנים</div>
               </div>
-            </div>
+            </Link>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12.5, lineHeight: 1.7, maxWidth: 220 }}>
               סדנאות, הצגות והפעלות חינוכיות מקצועיות לבתי ספר וגנים ברחבי הארץ.
             </p>

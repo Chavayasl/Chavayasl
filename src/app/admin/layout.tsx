@@ -7,6 +7,7 @@ import Image from "next/image";
 const NAV = [
   { href: "/admin", label: "דשבורד", icon: "📊", exact: true },
   { href: "/admin/activities", label: "פעילויות", icon: "🎯" },
+  { href: "/admin/categories", label: "קטגוריות", icon: "🗂️" },
   { href: "/admin/bookings", label: "הזמנות", icon: "📋" },
   { href: "/admin/contacts", label: "פניות", icon: "📬" },
 ];

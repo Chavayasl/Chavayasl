@@ -62,6 +62,26 @@ export function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+// ─── מסמך יחיד (singleton) — לעץ הקטגוריות ───
+export async function dbGetDoc<T>(table: string, def: T): Promise<T> {
+  if (!supabase) return def;
+  const { data, error } = await supabase.from(table).select("data").eq("id", "tree").maybeSingle();
+  if (error) { console.error(`[storage] dbGetDoc(${table}):`, error.message); return def; }
+  if (!data) {
+    const { error: seedErr } = await supabase.from(table).insert({ id: "tree", data: def });
+    if (seedErr) console.error(`[storage] seed(${table}):`, seedErr.message);
+    return def;
+  }
+  return data.data as T;
+}
+
+export async function dbSetDoc<T>(table: string, value: T): Promise<boolean> {
+  if (!supabase) return false;
+  const { error } = await supabase.from(table).upsert({ id: "tree", data: value });
+  if (error) { console.error(`[storage] dbSetDoc(${table}):`, error.message); return false; }
+  return true;
+}
+
 /** מעלה קובץ ל-Supabase Storage (bucket "media") ומחזיר URL ציבורי. */
 export async function uploadFile(file: File, folder = "uploads"): Promise<string | null> {
   if (!supabase) return null;
