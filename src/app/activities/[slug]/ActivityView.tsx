@@ -262,16 +262,18 @@ function EmptyHint({ children }: { children: React.ReactNode }) {
 
 function ShareButton({ title, text }: { title: string; text: string }) {
   const [done, setDone] = useState(false);
-  const share = async () => {
+  const share = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     const url = typeof window !== "undefined" ? window.location.href : "";
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try { await navigator.share({ title, text, url }); } catch { /* בוטל */ }
-    } else {
-      try { await navigator.clipboard.writeText(url); setDone(true); setTimeout(() => setDone(false), 2000); } catch { /* */ }
+    const nav = typeof navigator !== "undefined" ? navigator : undefined;
+    if (nav?.share) {
+      try { await nav.share({ title, text, url }); return; } catch { /* בוטל/לא נתמך — נופלים להעתקה */ }
     }
+    try { await nav?.clipboard?.writeText(url); setDone(true); setTimeout(() => setDone(false), 2000); } catch { /* */ }
   };
   return (
-    <button onClick={share}
+    <button type="button" onClick={share}
       style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14, fontWeight: 700, padding: "13px 0", background: "#fff", color: "#334155", border: "1.5px solid #e2e8f0", borderRadius: 3, cursor: "pointer", fontFamily: "Rubik, sans-serif", marginBottom: 18, transition: "border-color 0.15s, color 0.15s" }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = "#94a3b8"; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; }}>
