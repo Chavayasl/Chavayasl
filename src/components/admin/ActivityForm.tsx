@@ -19,12 +19,17 @@ const LABEL: Record<string, string> = { WORKSHOP: "סדנה", SHOW: "הצגה", 
 
 // ─── העלאת קובץ ל-Supabase Storage ───
 async function uploadToServer(file: File, folder: string): Promise<string | null> {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("folder", folder);
-  const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+  // 1. בקשת signed URL מהשרת (גוף קטן — לא חורג ממגבלת Vercel)
+  const res = await fetch("/api/admin/upload", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename: file.name, folder }),
+  });
   if (!res.ok) return null;
-  return (await res.json()).url as string;
+  const { uploadUrl, publicUrl } = await res.json();
+  // 2. העלאת הקובץ ישירות ל-Supabase (עוקף את מגבלת ה-4.5MB של Vercel)
+  const up = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+  if (!up.ok) { console.error("upload PUT failed", up.status); return null; }
+  return publicUrl as string;
 }
 
 export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {

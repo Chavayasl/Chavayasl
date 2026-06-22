@@ -82,15 +82,19 @@ export async function dbSetDoc<T>(table: string, value: T): Promise<boolean> {
   return true;
 }
 
-/** מעלה קובץ ל-Supabase Storage (bucket "media") ומחזיר URL ציבורי. */
-export async function uploadFile(file: File, folder = "uploads"): Promise<string | null> {
-  if (!supabase) return null;
-  const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+/** יוצר signed upload URL להעלאה ישירה מהדפדפן ל-Supabase Storage (עוקף את מגבלת Vercel). */
+export async function createSignedUpload(filename: string, folder = "uploads"): Promise<{ uploadUrl: string; publicUrl: string } | null> {
+  if (!url || !serviceKey) return null;
+  const ext = (filename.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const { error } = await supabase.storage.from("media").upload(path, bytes, {
-    contentType: file.type || "application/octet-stream", upsert: false,
+  const res = await fetch(`${url}/storage/v1/object/upload/sign/media/${path}`, {
+    method: "POST",
+    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
   });
-  if (error) { console.error("[storage] uploadFile:", error.message); return null; }
-  return supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
+  if (!res.ok) { console.error("[storage] createSignedUpload:", res.status, await res.text()); return null; }
+  const { url: signedPath } = (await res.json()) as { url: string };
+  return {
+    uploadUrl: `${url}/storage/v1${signedPath}`,
+    publicUrl: `${url}/storage/v1/object/public/media/${path}`,
+  };
 }
