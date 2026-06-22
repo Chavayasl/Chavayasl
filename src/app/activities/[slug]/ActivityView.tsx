@@ -103,7 +103,7 @@ export default function ActivityView({ a }: { a: Activity }) {
               style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 15, fontWeight: 700, padding: "14px 0", background: "#fff", color: "#16a34a", border: "1.5px solid #25D366", borderRadius: 3, textDecoration: "none", marginBottom: 10 }}>
               <span style={{ color: "#25D366" }}>💬</span> שלחו הודעה בוואטסאפ
             </a>
-            <ShareButton title={a.name} text={a.shortDescription} />
+            <ShareButton title={a.name} slug={a.slug} />
 
             {/* נקודות מכירה */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
@@ -248,15 +248,16 @@ function ReviewCol({ title, icon, children }: { title: string; icon: string; chi
   );
 }
 
-function ShareButton({ title, text }: { title: string; text: string }) {
+function ShareButton({ title, slug }: { title: string; slug: string }) {
   const [done, setDone] = useState(false);
   const share = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    // קישור נקי וקנוני — בלי טקסט מצורף
+    const url = typeof window !== "undefined" ? `${window.location.origin}/activities/${slug}` : "";
     const nav = typeof navigator !== "undefined" ? navigator : undefined;
     if (nav?.share) {
-      try { await nav.share({ title, text, url }); return; } catch { /* בוטל/לא נתמך — נופלים להעתקה */ }
+      try { await nav.share({ title, url }); return; } catch { /* בוטל/לא נתמך — נופלים להעתקה */ }
     }
     try { await nav?.clipboard?.writeText(url); setDone(true); setTimeout(() => setDone(false), 2000); } catch { /* */ }
   };

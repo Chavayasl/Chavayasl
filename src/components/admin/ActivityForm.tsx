@@ -79,6 +79,9 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
   const removeAt = (k: keyof FormData, i: number) => setForm(f => ({ ...f, [k]: ((f[k] as unknown[] | undefined) || []).filter((_, j) => j !== i) }));
   const updateAt = <T,>(k: keyof FormData, i: number, patch: Partial<T>) =>
     setForm(f => ({ ...f, [k]: ((f[k] as T[] | undefined) || []).map((it, j) => (j === i ? { ...it, ...patch } : it)) }));
+  // גלריה — התמונה הראשונה הופכת אוטומטית לראשית; מחיקת הראשית מנקה אותה
+  const addGalleryImage = (url: string) => setForm(f => { const imgs = (f.gallery as string[] | undefined) || []; return { ...f, gallery: [...imgs, url], mainImage: f.mainImage || url }; });
+  const removeGalleryImage = (i: number) => setForm(f => { const imgs = (f.gallery as string[] | undefined) || []; const removed = imgs[i]; return { ...f, gallery: imgs.filter((_, j) => j !== i), mainImage: removed === f.mainImage ? undefined : f.mainImage }; });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,25 +155,19 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
       {/* ── מדיה ── */}
       {sectionTitle("🖼️ מדיה")}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        <div>
-          {label("תמונה ראשית (כרטיס + ראש העמוד)")}
-          <SingleImage src={form.mainImage} folder="main" onChange={url => set("mainImage", url)} />
-        </div>
-        <div>
-          {label("מודעה מעוצבת (פוסטר בצד)")}
-          <SingleImage src={form.poster} folder="poster" onChange={url => set("poster", url)} />
-        </div>
+      <div>
+        {label("גלריית תמונות — לחץ ⭐ לבחירת התמונה הראשית (לכרטיס ולראש העמוד)")}
+        <Gallery images={arr<string>("gallery")} main={form.mainImage} onAdd={addGalleryImage} onRemove={removeGalleryImage} onSetMain={url => set("mainImage", url)} />
+      </div>
+
+      <div>
+        {label("מודעה מעוצבת (פוסטר בצד)")}
+        <SingleImage src={form.poster} folder="poster" onChange={url => set("poster", url)} />
       </div>
 
       <div>
         {label("וידאו ראשי (בראש העמוד)")}
         <SingleVideo src={form.heroVideo} folder="hero-video" onChange={url => set("heroVideo", url)} />
-      </div>
-
-      <div>
-        {label("גלריית תמונות")}
-        <Gallery images={arr<string>("gallery")} onAdd={url => addTo<string>("gallery", url)} onRemove={i => removeAt("gallery", i)} />
       </div>
 
       <div>
@@ -344,15 +341,22 @@ function SingleVideo({ src, folder, onChange }: { src?: string; folder: string; 
   );
 }
 
-function Gallery({ images, onAdd, onRemove }: { images: string[]; onAdd: (url: string) => void; onRemove: (i: number) => void }) {
+function Gallery({ images, main, onAdd, onRemove, onSetMain }: { images: string[]; main?: string; onAdd: (url: string) => void; onRemove: (i: number) => void; onSetMain: (url: string) => void }) {
   return (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-      {images.map((src, i) => (
-        <div key={i} style={{ position: "relative", width: 90, height: 70, borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0" }}>
-          <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          <button type="button" onClick={() => onRemove(i)} style={removeBtn}>✕</button>
-        </div>
-      ))}
+      {images.map((src, i) => {
+        const isMain = src === main;
+        return (
+          <div key={i} style={{ position: "relative", width: 110, height: 84, borderRadius: 8, overflow: "hidden", border: `2px solid ${isMain ? "#CC2222" : "#e2e8f0"}` }}>
+            <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <button type="button" onClick={() => onSetMain(src)} title="קבע כתמונה ראשית"
+              style={{ position: "absolute", bottom: 3, insetInlineStart: 3, background: isMain ? "#CC2222" : "rgba(0,0,0,0.55)", color: "#fff", border: "none", borderRadius: 4, fontSize: 10, fontWeight: 700, padding: "2px 7px", cursor: "pointer", fontFamily: "Rubik, sans-serif" }}>
+              {isMain ? "★ ראשית" : "☆ ראשית"}
+            </button>
+            <button type="button" onClick={() => onRemove(i)} style={removeBtn}>✕</button>
+          </div>
+        );
+      })}
       <UploadButton accept="image/*" folder="gallery" label="📤 הוסף תמונות" multiple onUrl={onAdd} />
     </div>
   );
@@ -376,7 +380,7 @@ function VideoList({ items, onAdd, onRemove, onTitle }: { items: { title: string
         );
       })}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <UploadButton accept="video/*" folder="videos" label="🎬 העלה סרטון" onUrl={onAdd} />
+        <UploadButton accept="video/*" folder="videos" label="🎬 העלה סרטונים" multiple onUrl={onAdd} />
         <YtLink onAdd={onAdd} />
       </div>
     </div>

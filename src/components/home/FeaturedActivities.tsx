@@ -17,8 +17,9 @@ function useReveal() {
 
 function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
   const [hov, setHov] = useState(false);
+  const hoverImg = a.gallery?.find(g => g !== a.mainImage) ?? a.gallery?.[0];
   return (
-    <div className="card" style={{ overflow: "hidden", animation: `fadeUp 0.5s ease ${Math.min(i, 8) * 0.06}s both` }}
+    <div className="card" style={{ overflow: "hidden", animation: `fadeUp 0.5s ease ${Math.min(i, 8) * 0.06}s both`, transition: "transform 0.25s ease, box-shadow 0.25s", transform: hov ? "translateY(-5px) scale(1.02)" : "none" }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
       {/* Visual */}
       <div style={{ height: 190, position: "relative", overflow: "hidden", background: `linear-gradient(135deg,${a.grad1},${a.grad2})` }}>
@@ -29,6 +30,9 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 72, opacity: 0.18 }}>{a.emoji}</span>
           </div>
+        )}
+        {hoverImg && hoverImg !== a.mainImage && (
+          <img src={hoverImg} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.45s ease" }} />
         )}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.3) 0%,transparent 55%)" }} />
         <div style={{ position: "absolute", top: 12, right: 12, left: 12, display: "flex", justifyContent: "space-between" }}>
