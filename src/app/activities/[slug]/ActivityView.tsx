@@ -109,9 +109,10 @@ export default function ActivityView({ a }: { a: Activity }) {
               📅 הזמנת פעילות
             </Link>
             <a href={waLink} target="_blank" rel="noopener noreferrer"
-              style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 15, fontWeight: 700, padding: "14px 0", background: "#fff", color: "#16a34a", border: "1.5px solid #25D366", borderRadius: 3, textDecoration: "none", marginBottom: 18 }}>
+              style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 15, fontWeight: 700, padding: "14px 0", background: "#fff", color: "#16a34a", border: "1.5px solid #25D366", borderRadius: 3, textDecoration: "none", marginBottom: 10 }}>
               <span style={{ color: "#25D366" }}>💬</span> שלחו הודעה בוואטסאפ
             </a>
+            <ShareButton title={a.name} text={a.shortDescription} />
 
             {/* נקודות מכירה */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
@@ -259,6 +260,26 @@ function ColFooter({ children }: { children: React.ReactNode }) {
 
 function EmptyHint({ children }: { children: React.ReactNode }) {
   return <div style={{ textAlign: "center", fontSize: 12.5, color: "#94a3b8", padding: "20px 0" }}>{children}</div>;
+}
+
+function ShareButton({ title, text }: { title: string; text: string }) {
+  const [done, setDone] = useState(false);
+  const share = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try { await navigator.share({ title, text, url }); } catch { /* בוטל */ }
+    } else {
+      try { await navigator.clipboard.writeText(url); setDone(true); setTimeout(() => setDone(false), 2000); } catch { /* */ }
+    }
+  };
+  return (
+    <button onClick={share}
+      style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14, fontWeight: 700, padding: "13px 0", background: "#fff", color: "#334155", border: "1.5px solid #e2e8f0", borderRadius: 3, cursor: "pointer", fontFamily: "Rubik, sans-serif", marginBottom: 18, transition: "border-color 0.15s, color 0.15s" }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = "#94a3b8"; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; }}>
+      {done ? "✓ הקישור הועתק!" : "🔗 שיתוף העמוד"}
+    </button>
+  );
 }
 
 function VideoCard({ title, src, poster, accent }: { title: string; src: string; poster?: string; accent: string }) {
