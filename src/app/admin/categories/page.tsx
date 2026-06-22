@@ -12,6 +12,7 @@ export default function CategoriesAdmin() {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [editSub, setEditSub] = useState<string | null>(null);
+  const [editGroup, setEditGroup] = useState<string | null>(null);
   const [del, setDel] = useState<Del | null>(null);
   const [moveTo, setMoveTo] = useState("");
 
@@ -37,11 +38,12 @@ export default function CategoriesAdmin() {
     else alert("⚠️ הפעולה לא נשמרה בשרת (צריך טבלת categories ב-Supabase).");
   };
 
-  const addGroup = () => change(t => [...t, { id: newId(), label: "קטגוריה חדשה", subs: [] }]);
+  const addGroup = () => change(t => [...t, { id: newId(), label: "קטגוריה חדשה", slugs: [], subs: [] }]);
   const renameGroup = (gi: number, label: string) => change(t => { t[gi].label = label; return t; });
   const addSub = (gi: number) => change(t => { t[gi].subs.push({ id: newId(), label: "תווית חדשה", slugs: [] }); return t; });
-  const editSubField = (gi: number, si: number, patch: Partial<{ label: string; emoji: string }>) => change(t => { t[gi].subs[si] = { ...t[gi].subs[si], ...patch }; return t; });
+  const editSubField = (gi: number, si: number, patch: Partial<{ label: string; emoji: string; start: string; end: string }>) => change(t => { t[gi].subs[si] = { ...t[gi].subs[si], ...patch }; return t; });
   const toggleSlug = (gi: number, si: number, slug: string) => change(t => { const s = t[gi].subs[si]; s.slugs = s.slugs.includes(slug) ? s.slugs.filter(x => x !== slug) : [...s.slugs, slug]; return t; });
+  const toggleGroupSlug = (gi: number, slug: string) => change(t => { const g = t[gi]; g.slugs = g.slugs.includes(slug) ? g.slugs.filter(x => x !== slug) : [...g.slugs, slug]; return t; });
 
   const confirmDelete = () => {
     if (!del) return;
@@ -92,9 +94,29 @@ export default function CategoriesAdmin() {
               <input value={g.label} onChange={e => renameGroup(gi, e.target.value)}
                 style={{ flex: 1, fontSize: 15, fontWeight: 800, color: "#0F172A", border: "none", background: "none", outline: "none", fontFamily: "Rubik, sans-serif" }} />
               <span style={{ fontSize: 11, color: "#94a3b8" }}>{g.subs.length} תוויות</span>
+              <button onClick={() => setEditGroup(editGroup === g.id ? null : g.id)}
+                style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", border: "1px solid #bbf7d0", borderRadius: 6, padding: "6px 11px", background: "#f0fdf4", cursor: "pointer", fontFamily: "Rubik, sans-serif", whiteSpace: "nowrap" }}>
+                פעילויות ({g.slugs.length})
+              </button>
               <button onClick={() => { setDel({ kind: "group", gi }); setMoveTo("__none__"); }} title="מחק קטגוריה"
                 style={{ border: "none", background: "none", cursor: "pointer", color: "#CC2222", fontSize: 16 }}>🗑️</button>
             </div>
+
+            {/* פעילויות ישירות בקטגוריה (לקטגוריות תמטיות ללא תוויות) */}
+            {editGroup === g.id && (
+              <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", background: "#fbfbfc", display: "flex", flexWrap: "wrap", gap: 6 }}>
+                <span style={{ width: "100%", fontSize: 11, fontWeight: 700, color: "#16a34a", marginBottom: 2 }}>פעילויות בקטגוריה זו:</span>
+                {acts.map(a => {
+                  const on = g.slugs.includes(a.slug);
+                  return (
+                    <button key={a.slug} onClick={() => toggleGroupSlug(gi, a.slug)} style={{
+                      padding: "5px 12px", borderRadius: 20, fontSize: 12, cursor: "pointer", fontFamily: "Rubik, sans-serif",
+                      border: `1.5px solid ${on ? "#16a34a" : "#e2e8f0"}`, background: on ? "#f0fdf4" : "#fff", color: on ? "#16a34a" : "#64748b", fontWeight: on ? 700 : 500,
+                    }}>{a.emoji} {a.name}</button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* תת-קטגוריות */}
             <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -112,9 +134,19 @@ export default function CategoriesAdmin() {
                     <button onClick={() => { setDel({ kind: "sub", gi, si }); setMoveTo("__none__"); }} title="מחק תווית"
                       style={{ border: "none", background: "none", cursor: "pointer", color: "#CC2222", fontSize: 15 }}>🗑️</button>
                   </div>
-                  {/* עריכת פעילויות */}
+                  {/* עריכת פעילויות + תאריכים */}
                   {editSub === s.id && (
-                    <div style={{ padding: "4px 10px 12px", borderTop: "1px solid #f1f5f9", display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    <div style={{ padding: "8px 10px 12px", borderTop: "1px solid #f1f5f9" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10, fontSize: 12, color: "#475569" }}>
+                        <span style={{ fontWeight: 700 }}>📅 חל מ:</span>
+                        <input type="date" value={s.start ? s.start.slice(0, 10) : ""} onChange={e => editSubField(gi, si, { start: e.target.value })}
+                          style={{ border: "1.5px solid #e2e8f0", borderRadius: 6, padding: "5px 8px", fontFamily: "Rubik, sans-serif", fontSize: 12 }} />
+                        <span style={{ fontWeight: 700 }}>עד:</span>
+                        <input type="date" value={s.end ? s.end.slice(0, 10) : ""} onChange={e => editSubField(gi, si, { end: e.target.value })}
+                          style={{ border: "1.5px solid #e2e8f0", borderRadius: 6, padding: "5px 8px", fontFamily: "Rubik, sans-serif", fontSize: 12 }} />
+                        <span style={{ fontSize: 10.5, color: "#94a3b8" }}>(השנה לא נחשבת — חוזר מדי שנה)</span>
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {acts.map(a => {
                         const on = s.slugs.includes(a.slug);
                         return (
@@ -124,6 +156,7 @@ export default function CategoriesAdmin() {
                           }}>{a.emoji} {a.name}</button>
                         );
                       })}
+                      </div>
                     </div>
                   )}
                 </div>

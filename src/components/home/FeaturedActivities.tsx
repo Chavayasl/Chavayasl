@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ACTIVITIES, TYPE_LABELS, type Activity } from "@/lib/data";
-import { DEFAULT_CATEGORY_TREE, AGE_FILTERS, type CategoryGroup } from "@/lib/categories";
+import { DEFAULT_CATEGORY_TREE, AGE_FILTERS, currentHolidayIndex, type CategoryGroup } from "@/lib/categories";
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -59,25 +59,41 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
 
 export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = DEFAULT_CATEGORY_TREE }: { allActivities?: Activity[]; categoryTree?: CategoryGroup[] }) {
   const { ref, v } = useReveal();
-  const [groupIdx, setGroupIdx] = useState(0);
-  const [activeIdx, setActiveIdx] = useState(-1); // -1 = הכל
+  const [tabIdx, setTabIdx] = useState(0); // 0 = הכל, 1..n = groups[tabIdx-1]
+  const [activeIdx, setActiveIdx] = useState(-1); // -1 = הכל (בתוך קטגוריה)
   const [ageFilter, setAgeFilter] = useState<string | null>(null); // null = כל הגילאים
 
   // הגיל הוא מסנן רוחבי — מסירים אותו מהקטגוריות הראשיות
   const groups = (categoryTree.length ? categoryTree : DEFAULT_CATEGORY_TREE).filter(g => g.id !== "age");
-  const subs = groups[groupIdx]?.subs || [];
+  const group = tabIdx === 0 ? null : groups[tabIdx - 1];
+  const subs = group?.subs || [];
+
+  const bySlugs = (slugs: string[]) => slugs.map(s => allActivities.find(a => a.slug === s)).filter(Boolean) as Activity[];
 
   // הפעילויות המסוננות — קטגוריה + תווית + גיל
-  let activities: Activity[] = allActivities;
-  if (activeIdx >= 0 && subs[activeIdx]) {
-    const slugs = subs[activeIdx].slugs;
-    activities = slugs.map(s => allActivities.find(a => a.slug === s)).filter(Boolean) as Activity[];
+  let activities: Activity[];
+  if (!group) {
+    activities = allActivities; // "הכל"
+  } else if (subs.length > 0) {
+    if (activeIdx >= 0 && subs[activeIdx]) {
+      activities = bySlugs(subs[activeIdx].slugs);
+    } else {
+      const set = new Set([...group.slugs, ...subs.flatMap(s => s.slugs)]);
+      activities = allActivities.filter(a => set.has(a.slug));
+    }
+  } else {
+    activities = bySlugs(group.slugs);
   }
   if (ageFilter) {
     activities = activities.filter(a => (a.ageGroups as string[] | undefined)?.includes(ageFilter));
   }
 
-  const handleGroup = (i: number) => { setGroupIdx(i); setActiveIdx(-1); };
+  // מעבר טאב — בקטגוריית חגים בוחרים אוטומטית את החג הרלוונטי לתאריך
+  const handleTab = (i: number) => {
+    setTabIdx(i);
+    const g = i === 0 ? null : groups[i - 1];
+    setActiveIdx(g && g.id === "holidays" ? currentHolidayIndex(g.subs) : -1);
+  };
 
   return (
     <section id="activities" style={{ background: "#f8fafc", padding: "4.5rem 2rem", scrollMarginTop: 72 }}>
@@ -85,17 +101,17 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
         <div ref={ref} style={{ textAlign: "center", marginBottom: "2.25rem", opacity: v ? 1 : 0, transform: v ? "none" : "translateY(16px)", transition: "all 0.6s" }}>
           <div className="sec-label">🎨 הפעילויות שלנו</div>
           <h2 className="sec-title" style={{ marginBottom: 10 }}>מצאו את הפעילות המתאימה</h2>
-          <p style={{ fontSize: 15, color: "#64748b", maxWidth: 460, margin: "0 auto" }}>סננו לפי חג, חודש או גיל הקהל — וגלו את הפעילות המושלמת עבורכם</p>
+          <p style={{ fontSize: 15, color: "#64748b", maxWidth: 460, margin: "0 auto" }}>סננו לפי קטגוריה, חג או גיל הקהל — וגלו את הפעילות המושלמת עבורכם</p>
         </div>
 
-        {/* Group tabs */}
-        <div style={{ display: "flex", justifyContent: "center", borderBottom: "2px solid #e5e7eb", marginBottom: "1.5rem" }}>
-          {groups.map((g, i) => (
-            <button key={g.id} onClick={() => handleGroup(i)} style={{
-              padding: "11px 26px", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer",
-              borderBottom: `2px solid ${groupIdx === i ? "#CC2222" : "transparent"}`, marginBottom: -2,
+        {/* Group tabs: הכל + קטגוריות ראשיות */}
+        <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", borderBottom: "2px solid #e5e7eb", marginBottom: "1.5rem" }}>
+          {[{ id: "__all__", label: "הכל" }, ...groups].map((g, i) => (
+            <button key={g.id} onClick={() => handleTab(i)} style={{
+              padding: "11px 22px", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer",
+              borderBottom: `2px solid ${tabIdx === i ? "#CC2222" : "transparent"}`, marginBottom: -2,
               background: "transparent", fontFamily: "Rubik, sans-serif",
-              color: groupIdx === i ? "#CC2222" : "#64748b", transition: "color 0.15s",
+              color: tabIdx === i ? "#CC2222" : "#64748b", transition: "color 0.15s",
             }}>{g.label}</button>
           ))}
         </div>
@@ -109,16 +125,18 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
           ))}
         </div>
 
-        {/* Filter chips: הכל + תת-קטגוריות */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: "1.25rem" }}>
-          <Chip active={activeIdx === -1} onClick={() => setActiveIdx(-1)}>הכל</Chip>
-          {subs.map((item, i) => (
-            <Chip key={item.id} active={activeIdx === i} onClick={() => setActiveIdx(i)}>
-              {item.emoji && <span style={{ marginLeft: 4 }}>{item.emoji}</span>}
-              {item.label}
-            </Chip>
-          ))}
-        </div>
+        {/* Filter chips: תת-קטגוריות (רק כשיש) */}
+        {subs.length > 0 && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: "1.25rem" }}>
+            <Chip active={activeIdx === -1} onClick={() => setActiveIdx(-1)}>הכל</Chip>
+            {subs.map((item, i) => (
+              <Chip key={item.id} active={activeIdx === i} onClick={() => setActiveIdx(i)}>
+                {item.emoji && <span style={{ marginLeft: 4 }}>{item.emoji}</span>}
+                {item.label}
+              </Chip>
+            ))}
+          </div>
+        )}
 
         {/* Count */}
         <div style={{ textAlign: "center", fontSize: 12.5, color: "#94a3b8", marginBottom: "1.75rem" }}>
@@ -127,7 +145,7 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
 
         {/* Grid */}
         {activities.length > 0 ? (
-          <div key={`${groupIdx}-${activeIdx}`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 22 }}>
+          <div key={`${tabIdx}-${activeIdx}`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 22 }}>
             {activities.map((a, i) => <Card key={a.id} a={a} i={i} />)}
           </div>
         ) : (
