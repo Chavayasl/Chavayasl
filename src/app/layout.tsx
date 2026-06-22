@@ -14,12 +14,19 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://chavayasl.vercel.app"),
   title: "חוויה סביב השנה – הפעלות וסדנאות לבתי ספר וגנים",
   description: "חוויה סביב השנה מספקת סדנאות, הצגות והפעלות חינוכיות לבתי ספר וגנים ברחבי הארץ. פעילויות מגוונות לכל גיל ועונה.",
   openGraph: {
     title: "חוויה סביב השנה",
     description: "הפעלות וסדנאות חינוכיות לבתי ספר וגנים",
     locale: "he_IL",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "חוויה סביב השנה",
+    description: "הפעלות וסדנאות חינוכיות לבתי ספר וגנים",
   },
 };
 
