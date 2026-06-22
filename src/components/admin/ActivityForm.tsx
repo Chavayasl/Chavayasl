@@ -51,7 +51,16 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
     set("seasons", form.seasons.includes(s) ? form.seasons.filter(x => x !== s) : [...form.seasons, s]);
   const toggleAge = (id: string) => {
     const cur = form.ageGroups || [];
-    set("ageGroups", cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]);
+    const LAYERS = ["gan", "yesodi", "hatam"];
+    if (id === "multi") {
+      // רב גילאי — בוחר/מבטל את כל שכבות הגיל
+      set("ageGroups", cur.includes("multi") ? [] : ["gan", "yesodi", "hatam", "multi"]);
+      return;
+    }
+    let next = cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id];
+    // אם כל השכבות מסומנות → מסמן גם "רב גילאי", אחרת מסיר אותו
+    next = LAYERS.every(l => next.includes(l)) ? Array.from(new Set([...next, "multi"])) : next.filter(x => x !== "multi");
+    set("ageGroups", next);
   };
 
   // עזרי מערכים — שימוש בעדכון פונקציונלי (קורא את הרשימה העדכנית, תומך בהעלאה מרובה)

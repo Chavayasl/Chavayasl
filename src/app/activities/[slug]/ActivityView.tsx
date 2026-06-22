@@ -71,16 +71,7 @@ export default function ActivityView({ a }: { a: Activity }) {
 
           {/* עמודה ימנית (RTL ראשונה): וידאו + תיאור + פרטים */}
           <div>
-            <div style={{ position: "relative", aspectRatio: "16/10", borderRadius: 16, overflow: "hidden", background: "#000", boxShadow: "0 16px 44px rgba(15,23,42,0.16)", marginBottom: 22 }}>
-              {ytId(heroVideo) ? (
-                <iframe src={ytEmbed(ytId(heroVideo)!, { autoplay: true, mute: true, loop: true, controls: false })}
-                  title="וידאו" allow="autoplay; encrypted-media" allowFullScreen
-                  style={{ width: "100%", height: "100%", border: "none", display: "block" }} />
-              ) : (
-                <video src={heroVideo} controls autoPlay muted loop playsInline
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              )}
-            </div>
+            <HeroVideo src={heroVideo} />
             <h2 className="sec-title" style={{ fontSize: 26, marginBottom: 12 }}>תיאור הפעילות</h2>
             <p style={{ fontSize: 15.5, lineHeight: 1.8, color: "#475569", marginBottom: 22 }}>{description}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 12 }}>
@@ -286,6 +277,29 @@ function ShareButton({ title, text }: { title: string; text: string }) {
       onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; }}>
       {done ? "✓ הקישור הועתק!" : "🔗 שיתוף העמוד"}
     </button>
+  );
+}
+
+function HeroVideo({ src }: { src: string }) {
+  const [big, setBig] = useState(false);
+  const yt = ytId(src);
+  return (
+    <>
+      <div style={{ position: "relative", aspectRatio: "16/10", borderRadius: 16, overflow: "hidden", background: "#000", boxShadow: "0 16px 44px rgba(15,23,42,0.16)", marginBottom: 22 }}>
+        {yt
+          ? <iframe src={ytEmbed(yt, { autoplay: true, mute: true, loop: true, controls: false })} title="וידאו" allow="autoplay; encrypted-media" allowFullScreen style={{ width: "100%", height: "100%", border: "none", display: "block" }} />
+          : <video src={src} controls autoPlay muted loop playsInline style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", background: "#000" }} />}
+        <button onClick={() => setBig(true)} aria-label="הגדל וידאו"
+          style={{ position: "absolute", top: 10, insetInlineEnd: 10, width: 38, height: 38, borderRadius: 8, border: "none", background: "rgba(0,0,0,0.55)", color: "#fff", cursor: "pointer", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>⛶</button>
+      </div>
+      {big && (
+        <Lightbox onClose={() => setBig(false)}>
+          {yt
+            ? <iframe src={ytEmbed(yt, { autoplay: true })} title="וידאו" allow="autoplay; encrypted-media" allowFullScreen style={{ width: "min(94vw, 1100px)", aspectRatio: "16/9", maxHeight: "90vh", border: "none", borderRadius: 12, background: "#000" }} />
+            : <video src={src} controls autoPlay playsInline style={{ maxWidth: "94vw", maxHeight: "90vh", borderRadius: 12, background: "#000" }} />}
+        </Lightbox>
+      )}
+    </>
   );
 }
 
