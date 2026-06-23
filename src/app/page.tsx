@@ -1,6 +1,5 @@
 import { VideoHero } from "@/components/home/VideoHero";
 import { FeaturesBanner } from "@/components/home/FeaturesBanner";
-import { StatsSection } from "@/components/home/StatsSection";
 import { FeaturedActivities } from "@/components/home/FeaturedActivities";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { ContactSection } from "@/components/home/ContactSection";
@@ -19,7 +18,6 @@ export default async function HomePage() {
     <>
       <VideoHero />
       <FeaturesBanner />
-      <StatsSection />
       <FeaturedActivities allActivities={activities} categoryTree={categoryTree} />
       <TestimonialsSection />
       <ContactSection />
