@@ -62,23 +62,23 @@ export function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
-// ─── מסמך יחיד (singleton) — לעץ הקטגוריות ───
-export async function dbGetDoc<T>(table: string, def: T): Promise<T> {
+// ─── מסמך יחיד (singleton) — לעץ הקטגוריות / הגדרות ───
+export async function dbGetDoc<T>(table: string, def: T, id = "tree"): Promise<T> {
   if (!supabase) return def;
-  const { data, error } = await supabase.from(table).select("data").eq("id", "tree").maybeSingle();
-  if (error) { console.error(`[storage] dbGetDoc(${table}):`, error.message); return def; }
+  const { data, error } = await supabase.from(table).select("data").eq("id", id).maybeSingle();
+  if (error) { console.error(`[storage] dbGetDoc(${table}/${id}):`, error.message); return def; }
   if (!data) {
-    const { error: seedErr } = await supabase.from(table).insert({ id: "tree", data: def });
-    if (seedErr) console.error(`[storage] seed(${table}):`, seedErr.message);
+    const { error: seedErr } = await supabase.from(table).insert({ id, data: def });
+    if (seedErr) console.error(`[storage] seed(${table}/${id}):`, seedErr.message);
     return def;
   }
   return data.data as T;
 }
 
-export async function dbSetDoc<T>(table: string, value: T): Promise<boolean> {
+export async function dbSetDoc<T>(table: string, value: T, id = "tree"): Promise<boolean> {
   if (!supabase) return false;
-  const { error } = await supabase.from(table).upsert({ id: "tree", data: value });
-  if (error) { console.error(`[storage] dbSetDoc(${table}):`, error.message); return false; }
+  const { error } = await supabase.from(table).upsert({ id, data: value });
+  if (error) { console.error(`[storage] dbSetDoc(${table}/${id}):`, error.message); return false; }
   return true;
 }
 

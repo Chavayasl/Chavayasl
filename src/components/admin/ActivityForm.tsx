@@ -81,7 +81,7 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
     setForm(f => ({ ...f, [k]: ((f[k] as T[] | undefined) || []).map((it, j) => (j === i ? { ...it, ...patch } : it)) }));
   // גלריה — התמונה הראשונה הופכת אוטומטית לראשית; מחיקת הראשית מנקה אותה
   const addGalleryImage = (url: string) => setForm(f => { const imgs = (f.gallery as string[] | undefined) || []; return { ...f, gallery: [...imgs, url], mainImage: f.mainImage || url }; });
-  const removeGalleryImage = (i: number) => setForm(f => { const imgs = (f.gallery as string[] | undefined) || []; const removed = imgs[i]; return { ...f, gallery: imgs.filter((_, j) => j !== i), mainImage: removed === f.mainImage ? undefined : f.mainImage }; });
+  const removeGalleryImage = (i: number) => setForm(f => { const imgs = (f.gallery as string[] | undefined) || []; const removed = imgs[i]; return { ...f, gallery: imgs.filter((_, j) => j !== i), mainImage: removed === f.mainImage ? undefined : f.mainImage, secondImage: removed === f.secondImage ? undefined : f.secondImage }; });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,8 +156,8 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
       {sectionTitle("🖼️ מדיה")}
 
       <div>
-        {label("גלריית תמונות — לחץ ⭐ לבחירת התמונה הראשית (לכרטיס ולראש העמוד)")}
-        <Gallery images={arr<string>("gallery")} main={form.mainImage} onAdd={addGalleryImage} onRemove={removeGalleryImage} onSetMain={url => set("mainImage", url)} />
+        {label("גלריית תמונות — ★ ראשית (כרטיס+עמוד) · ② שנייה (מתחלפת ב-hover)")}
+        <Gallery images={arr<string>("gallery")} main={form.mainImage} second={form.secondImage} onAdd={addGalleryImage} onRemove={removeGalleryImage} onSetMain={url => set("mainImage", url)} onSetSecond={url => set("secondImage", url)} />
       </div>
 
       <div>
@@ -341,18 +341,23 @@ function SingleVideo({ src, folder, onChange }: { src?: string; folder: string; 
   );
 }
 
-function Gallery({ images, main, onAdd, onRemove, onSetMain }: { images: string[]; main?: string; onAdd: (url: string) => void; onRemove: (i: number) => void; onSetMain: (url: string) => void }) {
+function galBadge(active: boolean, color: string): React.CSSProperties {
+  return { background: active ? color : "rgba(0,0,0,0.5)", color: "#fff", border: "none", borderRadius: 4, fontSize: 9.5, fontWeight: 700, padding: "2px 6px", cursor: "pointer", fontFamily: "Rubik, sans-serif", whiteSpace: "nowrap" };
+}
+
+function Gallery({ images, main, second, onAdd, onRemove, onSetMain, onSetSecond }: { images: string[]; main?: string; second?: string; onAdd: (url: string) => void; onRemove: (i: number) => void; onSetMain: (url: string) => void; onSetSecond: (url: string) => void }) {
   return (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
       {images.map((src, i) => {
-        const isMain = src === main;
+        const isMain = src === main, isSecond = src === second;
+        const border = isMain ? "#CC2222" : isSecond ? "#2563EB" : "#e2e8f0";
         return (
-          <div key={i} style={{ position: "relative", width: 110, height: 84, borderRadius: 8, overflow: "hidden", border: `2px solid ${isMain ? "#CC2222" : "#e2e8f0"}` }}>
+          <div key={i} style={{ position: "relative", width: 124, height: 96, borderRadius: 8, overflow: "hidden", border: `2px solid ${border}` }}>
             <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            <button type="button" onClick={() => onSetMain(src)} title="קבע כתמונה ראשית"
-              style={{ position: "absolute", bottom: 3, insetInlineStart: 3, background: isMain ? "#CC2222" : "rgba(0,0,0,0.55)", color: "#fff", border: "none", borderRadius: 4, fontSize: 10, fontWeight: 700, padding: "2px 7px", cursor: "pointer", fontFamily: "Rubik, sans-serif" }}>
-              {isMain ? "★ ראשית" : "☆ ראשית"}
-            </button>
+            <div style={{ position: "absolute", bottom: 3, insetInlineStart: 3, insetInlineEnd: 3, display: "flex", gap: 4 }}>
+              <button type="button" onClick={() => onSetMain(src)} title="תמונה ראשית" style={galBadge(isMain, "#CC2222")}>{isMain ? "★" : "☆"} ראשית</button>
+              <button type="button" onClick={() => onSetSecond(src)} title="תמונה שנייה (hover)" style={galBadge(isSecond, "#2563EB")}>② שנייה</button>
+            </div>
             <button type="button" onClick={() => onRemove(i)} style={removeBtn}>✕</button>
           </div>
         );

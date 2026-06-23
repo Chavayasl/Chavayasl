@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { BookButton } from "@/components/BookButton";
 import { SEASON_LABELS, TYPE_LABELS, type Activity } from "@/lib/data";
 import { ytId, ytEmbed, ytThumb } from "@/lib/media";
 import { useState, useEffect, useCallback } from "react";
@@ -96,9 +97,7 @@ export default function ActivityView({ a }: { a: Activity }) {
             )}
 
             {/* כפתורים */}
-            <Link href={`/book?activity=${a.slug}`} className="btn-red" style={{ display: "flex", width: "100%", fontSize: 16, padding: "15px 0", marginBottom: 10, gap: 8 }}>
-              📅 הזמנת פעילות
-            </Link>
+            <BookButton activity={a.slug} className="btn-red" style={{ display: "flex", width: "100%", fontSize: 16, padding: "15px 0", marginBottom: 10, justifyContent: "center" }} />
             <a href={waLink} target="_blank" rel="noopener noreferrer"
               style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 15, fontWeight: 700, padding: "14px 0", background: "#fff", color: "#16a34a", border: "1.5px solid #25D366", borderRadius: 3, textDecoration: "none", marginBottom: 10 }}>
               <span style={{ color: "#25D366" }}>💬</span> שלחו הודעה בוואטסאפ
@@ -205,10 +204,8 @@ export default function ActivityView({ a }: { a: Activity }) {
               style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 16, fontWeight: 700, padding: "15px 32px", background: "#25D366", color: "#fff", borderRadius: 3, textDecoration: "none", boxShadow: "0 10px 28px rgba(37,211,102,0.4)" }}>
               💬 שלחו הודעה בוואטסאפ
             </a>
-            <Link href={`/book?activity=${a.slug}`}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 16, fontWeight: 700, padding: "15px 32px", background: "#fff", color: a.grad1, borderRadius: 3, textDecoration: "none", boxShadow: "0 10px 28px rgba(0,0,0,0.18)" }}>
-              📅 הזמנת פעילות
-            </Link>
+            <BookButton activity={a.slug}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 16, fontWeight: 700, padding: "15px 32px", background: "#fff", color: a.grad1, borderRadius: 3, cursor: "pointer", border: "none", boxShadow: "0 10px 28px rgba(0,0,0,0.18)" }} />
           </div>
         </div>
       </section>

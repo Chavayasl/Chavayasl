@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ACTIVITIES, TYPE_LABELS, type Activity } from "@/lib/data";
 import { DEFAULT_CATEGORY_TREE, AGE_FILTERS, currentHolidayIndex, type CategoryGroup } from "@/lib/categories";
+import { BookButton } from "@/components/BookButton";
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -17,7 +18,7 @@ function useReveal() {
 
 function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
   const [hov, setHov] = useState(false);
-  const hoverImg = a.gallery?.find(g => g !== a.mainImage) ?? a.gallery?.[0];
+  const hoverImg = a.secondImage ?? a.gallery?.find(g => g !== a.mainImage) ?? a.gallery?.[0];
   return (
     <div className="card" style={{ overflow: "hidden", animation: `fadeUp 0.5s ease ${Math.min(i, 8) * 0.06}s both`, transition: "transform 0.25s ease, box-shadow 0.25s", transform: hov ? "translateY(-5px) scale(1.02)" : "none" }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
@@ -53,7 +54,7 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
           ))}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <Link href={`/book?activity=${a.slug}`} className="btn-red" style={{ flex: 1, fontSize: 12, padding: "9px 0", justifyContent: "center", borderRadius: 3 }}>להרשמה</Link>
+          <BookButton activity={a.slug} className="btn-red" style={{ flex: 1, fontSize: 12, padding: "9px 0", justifyContent: "center", borderRadius: 3 }}>להרשמה</BookButton>
           <Link href={`/activities/${a.slug}`} style={{ flex: 0.75, textAlign: "center", fontSize: 12, fontWeight: 600, padding: "9px 0", background: "#f5f6f8", color: "#374151", borderRadius: 3, textDecoration: "none" }}>פרטים ←</Link>
         </div>
       </div>

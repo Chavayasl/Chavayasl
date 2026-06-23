@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { BookButton } from "@/components/BookButton";
 
 export function VideoHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -107,18 +108,13 @@ export function VideoHero() {
           >
             לכל הפעילויות שלנו
           </Link>
-          <Link href="/#contact" style={{
+          <BookButton style={{
             background: "rgba(255,255,255,0.12)", color: "#fff",
             padding: "13px 26px", borderRadius: 3,
-            fontWeight: 600, fontSize: 14,
-            textDecoration: "none", fontFamily: "Rubik, sans-serif",
+            fontWeight: 600, fontSize: 14, cursor: "pointer",
+            fontFamily: "Rubik, sans-serif",
             border: "1.5px solid rgba(255,255,255,0.3)",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.22)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; }}
-          >
-            להזמנת פעילות
-          </Link>
+          }} />
         </div>
       </div>
 

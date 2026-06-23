@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { SearchButton } from "./SearchButton";
+import { BookButton } from "@/components/BookButton";
 
 const NAV_RIGHT = [
   { href: "/", label: "בית" },
@@ -91,9 +92,7 @@ export function Navbar() {
         {/* צד שמאל (RTL): קישורים + כפתור הזמנה */}
         <nav className="hidden md:flex" style={{ alignItems: "center", gap: "1.75rem", justifyContent: "flex-end" }}>
           {NAV_LEFT.map(navLink)}
-          <Link href="/book" className="btn-red" style={{ fontSize: 13, padding: "9px 22px", borderRadius: 3 }}>
-            להזמנת פעילות
-          </Link>
+          <BookButton className="btn-red" style={{ fontSize: 13, padding: "9px 22px", borderRadius: 3 }} />
         </nav>
       </div>
 
@@ -107,7 +106,7 @@ export function Navbar() {
         }}>
           {ALL_LINKS.map(l => <Link key={l.href} href={l.href} onClick={() => setMenu(false)}
             style={{ fontSize: 16, fontWeight: 500, color: "#334155", textDecoration: "none" }}>{l.label}</Link>)}
-          <Link href="/book" onClick={() => setMenu(false)} className="btn-red" style={{ textAlign: "center" }}>להזמנת פעילות</Link>
+          <BookButton className="btn-red" style={{ textAlign: "center", justifyContent: "center" }} />
         </div>
       )}
     </header>
