@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbList, dbInsert, dbUpdate } from "@/lib/storage";
 import { sendEmail, leadEmailHtml } from "@/lib/notify";
+import { forwardToZoho } from "@/lib/zoho";
 
 export interface Contact {
   id: string;
@@ -35,6 +36,18 @@ export async function POST(req: NextRequest) {
     ["פעילות", body.activity],
     ["הערות", body.notes],
   ]));
+
+  // העברת הליד ל-Zoho CRM
+  await forwardToZoho({
+    Name: body.name,
+    PhoneNumber: body.phone,
+    MultiLine: [
+      `מוסד: ${body.institution}`,
+      body.activity ? `פעילות: ${body.activity}` : "",
+      body.notes ? `הערות: ${body.notes}` : "",
+      "(מקור: טופס יצירת קשר באתר)",
+    ].filter(Boolean).join("\n"),
+  });
 
   return NextResponse.json(newContact, { status: 201 });
 }

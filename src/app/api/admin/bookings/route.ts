@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbList, dbInsert, dbUpdate } from "@/lib/storage";
 import { sendEmail, leadEmailHtml } from "@/lib/notify";
+import { forwardToZoho } from "@/lib/zoho";
 import { ACTIVITIES } from "@/lib/data";
 
 const AGE_LABELS: Record<string, string> = {
@@ -50,6 +51,21 @@ export async function POST(req: NextRequest) {
     ["גיל", AGE_LABELS[body.ageGroup] || body.ageGroup],
     ["הערות", body.notes],
   ]));
+
+  // העברת הליד ל-Zoho CRM
+  await forwardToZoho({
+    Name: body.contactName,
+    Email: body.email,
+    PhoneNumber: body.phone,
+    MultiLine: [
+      `פעילות: ${act ? act.name : body.activityId}`,
+      `מוסד: ${body.institution}`,
+      `תאריך מועדף: ${body.preferredDate}${body.alternativeDate ? ` (חלופי: ${body.alternativeDate})` : ""}`,
+      `משתתפים: ${body.participantsCount}`,
+      `גיל: ${AGE_LABELS[body.ageGroup] || body.ageGroup || ""}`,
+      body.notes ? `הערות: ${body.notes}` : "",
+    ].filter(Boolean).join("\n"),
+  });
 
   return NextResponse.json(newBooking, { status: 201 });
 }
