@@ -54,7 +54,7 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
           ))}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <BookButton activity={a.slug} className="btn-red" style={{ flex: 1, fontSize: 12, padding: "9px 0", justifyContent: "center", borderRadius: 3 }}>להרשמה</BookButton>
+          <BookButton activity={a.slug} className="btn-red" style={{ flex: 1, fontSize: 12, padding: "9px 0", justifyContent: "center", borderRadius: 3 }}>לבקשת הצעת מחיר</BookButton>
           <Link href={`/activities/${a.slug}`} style={{ flex: 0.75, textAlign: "center", fontSize: 12, fontWeight: 600, padding: "9px 0", background: "#f5f6f8", color: "#374151", borderRadius: 3, textDecoration: "none" }}>פרטים ←</Link>
         </div>
       </div>

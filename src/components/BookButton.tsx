@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { DEFAULT_SETTINGS, type SiteSettings } from "@/lib/settings";
 
 // מטמון משותף — כל הכפתורים מושכים את ההגדרות פעם אחת
@@ -15,7 +16,8 @@ function loadSettings(): Promise<SiteSettings> {
 export function BookButton({ activity, className, style, children }: { activity?: string; className?: string; style?: React.CSSProperties; children?: React.ReactNode }) {
   const [s, setS] = useState<SiteSettings>(cache || DEFAULT_SETTINGS);
   const [open, setOpen] = useState(false);
-  useEffect(() => { loadSettings().then(setS); }, []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); loadSettings().then(setS); }, []);
 
   const b = s.booking;
   const label = children ?? b.buttonText;
@@ -24,10 +26,8 @@ export function BookButton({ activity, className, style, children }: { activity?
     return <Link href={activity ? `/book?activity=${activity}` : "/book"} className={className} style={style}>{label}</Link>;
   }
 
-  return (
-    <>
-      <button type="button" onClick={() => setOpen(true)} className={className} style={style}>{label}</button>
-      {open && (
+  // המודאל מרונדר דרך Portal ל-body כדי לא להיתפס בתוך כרטיס עם transform — נפתח במרכז המסך המלא
+  const modal = (
         <div onClick={() => setOpen(false)}
           style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(15,23,42,0.7)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, animation: "fadeIn 0.2s ease" }}>
           <div onClick={e => e.stopPropagation()}
@@ -37,7 +37,12 @@ export function BookButton({ activity, className, style, children }: { activity?
             <iframe src={b.url} title="הזמנת פעילות" style={{ width: "100%", height: "100%", border: "none", display: "block" }} />
           </div>
         </div>
-      )}
+  );
+
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)} className={className} style={style}>{label}</button>
+      {open && mounted && createPortal(modal, document.body)}
     </>
   );
 }
