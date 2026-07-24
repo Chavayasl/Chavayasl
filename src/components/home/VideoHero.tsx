@@ -1,8 +1,6 @@
 "use client";
-import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { BookButton } from "@/components/BookButton";
 
 export function VideoHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -87,33 +85,6 @@ export function VideoHero() {
         }}>
           סדנאות, הפעלות והצגות מקצועיות שמגיעות עד אליכם.
         </p>
-
-        {/* CTA */}
-        <div style={{
-          display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center",
-          opacity: phase === "text" ? 1 : 0,
-          transform: phase === "text" ? "translateY(0)" : "translateY(14px)",
-          transition: "opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s",
-        }}>
-          <Link href="/#activities" style={{
-            background: "#CC2222", color: "#fff",
-            padding: "13px 30px", borderRadius: 3,
-            fontWeight: 700, fontSize: 15,
-            textDecoration: "none", fontFamily: "Rubik, sans-serif",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#a81b1b"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#CC2222"; }}
-          >
-            לכל הפעילויות שלנו
-          </Link>
-          <BookButton style={{
-            background: "rgba(255,255,255,0.12)", color: "#fff",
-            padding: "13px 26px", borderRadius: 3,
-            fontWeight: 600, fontSize: 14, cursor: "pointer",
-            fontFamily: "Rubik, sans-serif",
-            border: "1.5px solid rgba(255,255,255,0.3)",
-          }} />
-        </div>
       </div>
 
       <style>{`

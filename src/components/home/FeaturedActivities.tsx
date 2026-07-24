@@ -106,8 +106,7 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
     <section id="activities" style={{ background: "#f8fafc", padding: "4.5rem 2rem", scrollMarginTop: 72 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div ref={ref} style={{ textAlign: "center", marginBottom: "2.25rem", opacity: v ? 1 : 0, transform: v ? "none" : "translateY(16px)", transition: "all 0.6s" }}>
-          <div className="sec-label">🎨 הפעילויות שלנו</div>
-          <h2 className="sec-title" style={{ marginBottom: 10 }}>מצאו את הפעילות המתאימה</h2>
+          <h2 className="sec-title" style={{ marginBottom: 10 }}>הפעילויות שלנו</h2>
           <p style={{ fontSize: 15, color: "#64748b", maxWidth: 460, margin: "0 auto" }}>סננו לפי קטגוריה, חג או גיל הקהל — וגלו את הפעילות המושלמת עבורכם</p>
         </div>
 

@@ -8,8 +8,8 @@ const FEATURES = [
         <path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>
       </svg>
     ),
-    title: 'מאושר גפ"ן',
-    desc: "רכישה ישירה למוסדות חינוך",
+    title: 'מאושר בגפ"ן',
+    desc: 'ניתן להזמין דרך תוכנית גפ"ן של משרד החינוך',
     color: "#16a34a", bg: "#f0fdf4",
     from: "bottom",
   },
