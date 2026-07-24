@@ -70,9 +70,8 @@ export function VideoHero() {
           transform: phase === "text" ? "translateY(0)" : "translateY(22px)",
           transition: "opacity 0.7s ease, transform 0.7s ease",
         }}>
-          פעילויות חינוכיות<br />
-          <span style={{ color: "#FF6B6B" }}>בלתי נשכחות</span><br />
-          לבתי ספר וגנים
+          כשתוכן, ערכים וחוויה<br />
+          <span style={{ color: "#FF6B6B" }}>נפגשים</span>
         </h1>
 
         {/* Sub */}
@@ -86,8 +85,7 @@ export function VideoHero() {
           transform: phase === "text" ? "translateY(0)" : "translateY(18px)",
           transition: "opacity 0.7s ease 0.15s, transform 0.7s ease 0.15s",
         }}>
-          סדנאות, הצגות והפעלות מקצועיות שמגיעות עד אליכם —<br />
-          חוויית למידה שמתחברת לחגים ולשנה היהודית
+          סדנאות, הפעלות והצגות מקצועיות שמגיעות עד אליכם.
         </p>
 
         {/* CTA */}
