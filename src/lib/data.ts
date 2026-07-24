@@ -26,6 +26,12 @@ export interface Activity {
   ageGroups?: string[]; // gan | yesodi | hatam | multi (רב גילאי)
   /** קטגוריות ראשיות אליהן שייכת הפעילות (holidays/science/extreme/shows) */
   categories?: string[];
+  /** שפות בהן הפעילות מועברת: he | ru | ar (ברירת מחדל: עברית) */
+  languages?: string[];
+  /** "מה מקבלים בפעילות" — פריטים עם אייקון/אמוג'י שהמנהל בוחר (גובר על includes) */
+  gives?: { text: string; icon: string }[];
+  /** עונה עיקרית להצגה לפי סדר: winter | spring | summer | autumn | all_year */
+  season?: string;
 
   // ─── מדיה לדף המכירה (אופציונלי — אם ריק, נטענות ברירות מחדל) ───
   /** תמונה ראשית (כרטיס + ראש העמוד) */

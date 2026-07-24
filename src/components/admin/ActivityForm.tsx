@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SEASON_LABELS, type Activity } from "@/lib/data";
 import { ytId, ytThumb } from "@/lib/media";
+import { RichText } from "./RichText";
+import { IconPicker } from "./IconPicker";
 
 type FormData = Omit<Activity, "id" | "timeline" | "includes"> & { id?: string };
 
@@ -14,8 +16,27 @@ const DEFAULTS: FormData = {
   grad1: "#CC2222", grad2: "#8B1A1A", grad1h: "#a81b1b", grad2h: "#6b1414",
   icon: "", emoji: "🎯",
   gallery: [], videos: [], videoTestimonials: [], waMessages: [], audioTestimonials: [],
-  ageGroups: [], categories: [],
+  ageGroups: [], categories: [], languages: ["he"], gives: [], sellingPoints: [], season: "all_year",
 };
+
+const SEASON_OPTIONS = [
+  { id: "all_year", label: "כל השנה" },
+  { id: "winter", label: "חורף" },
+  { id: "spring", label: "אביב" },
+  { id: "summer", label: "קיץ" },
+  { id: "autumn", label: "סתיו" },
+];
+
+const LANG_OPTIONS = [
+  { id: "he", label: "עברית" },
+  { id: "ru", label: "רוסית" },
+  { id: "ar", label: "ערבית" },
+];
+
+// יצירת slug — שומר אותיות עברית (U+0590–U+05FF), אנגלית, ספרות ומקפים
+function slugify(s: string): string {
+  return s.trim().replace(/\s+/g, "-").replace(/[^\w֐-׿-]/g, "");
+}
 
 const LABEL: Record<string, string> = { WORKSHOP: "סדנה", SHOW: "הצגה", GAME: "משחק", FOOD: "בישול" };
 const AGE_OPTIONS = [
@@ -93,8 +114,15 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
-    if (res.ok) router.push("/admin/activities");
-    else setError("שגיאה בשמירה");
+    if (res.ok) {
+      if (isEdit) {
+        router.push("/admin/activities");
+      } else {
+        // אחרי יצירה — עוברים לעמוד העריכה של הפעילות החדשה (משם אפשר גם לצפות בדף הפעילות)
+        const created = await res.json().catch(() => null);
+        router.push(created?.id ? `/admin/activities/${created.id}` : "/admin/activities");
+      }
+    } else setError("שגיאה בשמירה");
     setLoading(false);
   };
 
@@ -114,10 +142,17 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.4rem", maxWidth: 720 }}>
       {error && <div style={{ background: "#fef2f2", border: "1px solid #fecaca", padding: "10px 14px", borderRadius: 3, fontSize: 13, color: "#CC2222" }}>{error}</div>}
 
+      {initial?.id && form.slug && (
+        <a href={`/activities/${form.slug}`} target="_blank" rel="noopener noreferrer"
+          style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 18px", background: "#0F4C2A", color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+          ↗ צפייה בדף הפעילות
+        </a>
+      )}
+
       {/* ── פרטים בסיסיים ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        <div>{label("שם הפעילות *")}<input required style={inputStyle} value={form.name} onChange={e => { set("name", e.target.value); if (!initial?.id) set("slug", e.target.value.replace(/\s+/g, "-").replace(/[^\w-]/g, "")); }} placeholder="שם הפעילות" /></div>
-        <div>{label("Slug (URL)")}<input style={inputStyle} value={form.slug} onChange={e => set("slug", e.target.value)} placeholder="slug-name" dir="ltr" /></div>
+        <div>{label("שם הפעילות *")}<input required style={inputStyle} value={form.name} onChange={e => { set("name", e.target.value); if (!initial?.id) set("slug", slugify(e.target.value)); }} placeholder="שם הפעילות" /></div>
+        <div>{label("Slug (סיומת לינק — ניתן בעברית)")}<input style={inputStyle} value={form.slug} onChange={e => set("slug", slugify(e.target.value))} placeholder="לדוגמה: שופרתון" dir="auto" /></div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
@@ -128,7 +163,61 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
 
       <div>
         {label("מקס' משתתפים")}
-        <input type="number" style={{ ...inputStyle, maxWidth: 200 }} value={form.maxParticipants} onChange={e => set("maxParticipants", +e.target.value)} />
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <input type="number" min={0} disabled={form.maxParticipants === 0}
+            style={{ ...inputStyle, maxWidth: 200, opacity: form.maxParticipants === 0 ? 0.45 : 1 }}
+            value={form.maxParticipants === 0 ? "" : form.maxParticipants}
+            onChange={e => set("maxParticipants", +e.target.value)} placeholder="מספר משתתפים" />
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, color: "#334155", cursor: "pointer", whiteSpace: "nowrap" }}>
+            <input type="checkbox" checked={form.maxParticipants === 0}
+              onChange={e => set("maxParticipants", e.target.checked ? 0 : 100)} />
+            ללא הגבלה
+          </label>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+        <div>{label("גיל מינימלי")}<input type="number" min={0} style={inputStyle} value={form.minAge ?? ""} onChange={e => set("minAge", e.target.value === "" ? undefined : +e.target.value)} placeholder="3" /></div>
+        <div>{label("גיל מקסימלי (ריק = ללא עליון → יוצג 3+)")}<input type="number" min={0} style={inputStyle} value={form.maxAge ?? ""} onChange={e => set("maxAge", e.target.value === "" ? undefined : +e.target.value)} placeholder="12" /></div>
+      </div>
+
+      <div>
+        {label("עונה עיקרית (לפיה הפעילות ממוינת לפי תאריך הכניסה לאתר)")}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {SEASON_OPTIONS.map(o => {
+            const on = (form.season || "all_year") === o.id;
+            return (
+              <button key={o.id} type="button" onClick={() => set("season", o.id)} style={{
+                padding: "8px 18px", borderRadius: 3, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Rubik, sans-serif",
+                border: `1.5px solid ${on ? "#CC2222" : "#e2e8f0"}`,
+                background: on ? "#fef2f2" : "#fff",
+                color: on ? "#CC2222" : "#64748b",
+              }}>{o.label}</button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        {label("שפות הפעילות (בחירה מרובה)")}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {LANG_OPTIONS.map(o => {
+            const cur = form.languages?.length ? form.languages : ["he"];
+            const on = cur.includes(o.id);
+            return (
+              <button key={o.id} type="button" onClick={() => {
+                const c = form.languages?.length ? form.languages : ["he"];
+                const next = c.includes(o.id) ? c.filter(x => x !== o.id) : [...c, o.id];
+                set("languages", next.length ? next : ["he"]);
+              }} style={{
+                padding: "8px 18px", borderRadius: 3, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "Rubik, sans-serif",
+                border: `1.5px solid ${on ? "#16a34a" : "#e2e8f0"}`,
+                background: on ? "#f0fdf4" : "#fff",
+                color: on ? "#16a34a" : "#64748b",
+              }}>{o.label}</button>
+            );
+          })}
+        </div>
       </div>
 
       <div>
@@ -149,7 +238,7 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
       </div>
 
       <div>{label("תיאור קצר *")}<input required style={inputStyle} value={form.shortDescription} onChange={e => set("shortDescription", e.target.value)} placeholder="תיאור קצר לכרטיס" /></div>
-      <div>{label("תיאור מלא")}<textarea style={{ ...inputStyle, resize: "vertical" }} rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="תיאור מלא של הפעילות" /></div>
+      <div>{label("תיאור מלא — ניתן לעצב (הדגשות, צבעים, רשימות)")}<RichText value={form.description} onChange={html => set("description", html)} placeholder="כתבו כאן את תיאור הפעילות המלא..." /></div>
       <div>{label("סלוגן לפוסטר")}<input style={inputStyle} value={form.tagline || ""} onChange={e => set("tagline", e.target.value)} placeholder="חווים · יוצרים · נהנים!" /></div>
 
       {/* ── מדיה ── */}
@@ -174,6 +263,36 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
         {label("גלריית סרטונים")}
         <VideoList items={arr("videos")} onAdd={src => addTo("videos", { title: "סרטון", src })} onRemove={i => removeAt("videos", i)}
           onTitle={(i, title) => updateAt<{ title: string; src: string }>("videos", i, { title })} />
+      </div>
+
+      {/* ── מה מקבלים בפעילות ── */}
+      {sectionTitle("🎁 מה מקבלים בפעילות (בחרו אייקון לכל פריט)")}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {arr<{ text: string; icon: string }>("gives").map((g, i) => (
+          <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <IconPicker value={g.icon} onChange={icon => updateAt<{ text: string; icon: string }>("gives", i, { icon })} />
+            <input style={inputStyle} value={g.text} onChange={e => updateAt<{ text: string; icon: string }>("gives", i, { text: e.target.value })} placeholder="לדוגמה: צנצנת דבש אישית לכל ילד" />
+            <button type="button" onClick={() => removeAt("gives", i)} title="הסרה"
+              style={{ width: 40, height: 40, border: "1px solid #fecaca", background: "#fef2f2", color: "#dc2626", borderRadius: 8, cursor: "pointer", flexShrink: 0 }}>✕</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => addTo("gives", { text: "", icon: "🎁" })}
+          style={{ alignSelf: "flex-start", padding: "8px 16px", border: "1.5px dashed #cbd5e1", background: "#fff", color: "#334155", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "Rubik, sans-serif" }}>＋ הוספת פריט</button>
+      </div>
+
+      {/* ── נקודות מכירה (3 התגים מתחת לכפתורים בעמוד הפעילות) ── */}
+      {sectionTitle("⭐ נקודות מכירה (התגים מתחת לכפתורים)")}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {arr<{ title: string; icon: string }>("sellingPoints").map((p, i) => (
+          <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <IconPicker value={p.icon} onChange={icon => updateAt<{ title: string; icon: string }>("sellingPoints", i, { icon })} />
+            <input style={inputStyle} value={p.title} onChange={e => updateAt<{ title: string; icon: string }>("sellingPoints", i, { title: e.target.value })} placeholder="לדוגמה: זירה בכל שטח" />
+            <button type="button" onClick={() => removeAt("sellingPoints", i)} title="הסרה"
+              style={{ width: 40, height: 40, border: "1px solid #fecaca", background: "#fef2f2", color: "#dc2626", borderRadius: 8, cursor: "pointer", flexShrink: 0 }}>✕</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => addTo("sellingPoints", { title: "", icon: "⭐" })}
+          style={{ alignSelf: "flex-start", padding: "8px 16px", border: "1.5px dashed #cbd5e1", background: "#fff", color: "#334155", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "Rubik, sans-serif" }}>＋ הוספת נקודת מכירה</button>
       </div>
 
       {/* ── קטגוריות ראשיות ── */}

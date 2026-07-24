@@ -36,6 +36,7 @@ export function Footer() {
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", marginBottom: 14 }}>צור קשר</div>
             <a href="tel:0556671997" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none", marginBottom:10 }}>📞 055-667-1997</a>
+            <a href="tel:0586001236" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none", marginBottom:10 }}>🏢 058-600-1236 · משרד</a>
             <a href="mailto:office.chavayasl@gmail.com" style={{ display:"block", color:"rgba(255,255,255,0.5)", fontSize:13, textDecoration:"none", marginBottom:10 }}>✉️ office.chavayasl@gmail.com</a>
             <a href="https://wa.me/972556671997" target="_blank" rel="noopener noreferrer" style={{ display:"block", color:"#4ade80", fontSize:13, textDecoration:"none", fontWeight:600 }}>💬 וואטסאפ</a>
           </div>

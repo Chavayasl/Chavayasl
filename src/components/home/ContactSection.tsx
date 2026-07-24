@@ -47,6 +47,14 @@ export function ContactSection() {
               <span style={{ width: 42, height: 42, background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 4, fontSize: 18, flexShrink: 0 }}>📞</span>
               055-667-1997
             </a>
+            <a href="tel:0586001236" style={{
+              display: "flex", alignItems: "center", gap: 12,
+              textDecoration: "none", color: "#0F172A",
+              fontSize: 15, fontWeight: 600,
+            }}>
+              <span style={{ width: 42, height: 42, background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 4, fontSize: 18, flexShrink: 0 }}>🏢</span>
+              058-600-1236 <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>· משרד</span>
+            </a>
             <a href="https://wa.me/972556671997" target="_blank" rel="noopener noreferrer" style={{
               display: "flex", alignItems: "center", gap: 12,
               textDecoration: "none", color: "#0F172A",

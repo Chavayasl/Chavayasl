@@ -7,24 +7,38 @@ import { useState, useEffect, useCallback } from "react";
 
 const WA_PHONE = "972556671997";
 
+// ניקוי בסיסי של HTML מהעורך (תוכן מנהל בלבד) — מסירים סקריפטים ומטפלי אירועים
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<\s*script[\s\S]*?<\s*\/\s*script\s*>/gi, "")
+    .replace(/<\s*(iframe|object|embed)[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/javascript:/gi, "");
+}
+
 export default function ActivityView({ a }: { a: Activity }) {
   // ─── ברירות מחדל חכמות (אם אין מדיה אמיתית עדיין) ───
   const heroVideo = a.heroVideo || "/hero-video.mp4";
   const tagline = a.tagline || "חווים · יוצרים · נהנים!";
-  const description = a.experienceText || a.description;
+  // מציגים בדיוק את מה שהמנהל הזין בשדה "תיאור מלא"; experienceText הוא רק גיבוי ישן
+  const description = (a.description && a.description.trim()) ? a.description : (a.experienceText || "");
+  const descIsHtml = /<\/?[a-z][\s\S]*>/i.test(description);
   const gallery = a.gallery?.length ? a.gallery : ["/hero1.png", "/hero2.png", "/hero3.png", "/hero4.png", "/bg1.png", "/bg2.png"];
+
+  const langLabels: Record<string, string> = { he: "עברית", ru: "רוסית", ar: "ערבית" };
+  const langs = (a.languages?.length ? a.languages : ["he"]).map(l => langLabels[l] || l).join(", ");
 
   const features = a.features?.length ? a.features : [
     { icon: "⏱", label: "משך הפעילות", value: `${a.duration} דקות` },
-    { icon: "👥", label: "מספר משתתפים", value: `עד ${a.maxParticipants}` },
-    { icon: "🧒", label: "גילאים", value: `${a.minAge}–${a.maxAge}` },
-    { icon: "🏫", label: "מתאים ל", value: "בתי ספר, גנים, קייטנות" },
+    { icon: "👥", label: "מספר משתתפים", value: a.maxParticipants ? `עד ${a.maxParticipants}` : "ללא הגבלה" },
+    { icon: "🧒", label: "גילאים", value: a.maxAge ? `${a.minAge}–${a.maxAge}` : `${a.minAge}+` },
+    { icon: "🗣️", label: "שפות", value: langs },
     { icon: "🚚", label: "הגעה", value: "מגיע עד אליכם" },
   ];
 
   const sellingPoints = a.sellingPoints?.length ? a.sellingPoints : [
     { icon: "⚙️", title: "התאמה אישית מלאה" },
-    { icon: "👥", title: `עד ${a.maxParticipants} משתתפים` },
+    { icon: "👥", title: a.maxParticipants ? `עד ${a.maxParticipants} משתתפים` : "ללא הגבלת משתתפים" },
     { icon: "⭐", title: "מדריכים מקצועיים" },
   ];
 
@@ -33,8 +47,11 @@ export default function ActivityView({ a }: { a: Activity }) {
   const audioTestimonials = a.audioTestimonials || [];
   const hasTestimonials = videoTestimonials.length > 0 || waMessages.length > 0 || audioTestimonials.length > 0;
 
-  const gives = a.includes;
   const giveIcons = ["🎁", "🎨", "📦", "🧑‍🏫", "👥", "🛡️", "✨", "🎯"];
+  // אם המנהל הגדיר פריטים עם אייקונים — משתמשים בהם; אחרת נופלים ל-includes עם אייקונים מסתובבים
+  const gives: { text: string; icon: string }[] = a.gives?.length
+    ? a.gives
+    : (a.includes || []).map((text, i) => ({ text, icon: giveIcons[i % giveIcons.length] }));
 
   const waLink = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(`שלום, מתעניין/ת בפעילות "${a.name}"`)}`;
   const grad = `linear-gradient(120deg, ${a.grad1} 0%, ${a.grad2} 100%)`;
@@ -50,7 +67,7 @@ export default function ActivityView({ a }: { a: Activity }) {
             {"  ›  "}<span style={{ color: "#64748b", fontWeight: 600 }}>{a.name}</span>
           </div>
           <h1 style={{ display: "flex", alignItems: "center", gap: 12, fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, color: "#0F172A", letterSpacing: "-1px", lineHeight: 1.1, marginBottom: 14 }}>
-            <span style={{ fontSize: "1.05em" }}>{a.emoji}</span>{a.name}
+            {a.name}
           </h1>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             <Tag bg={a.grad1} solid>{TYPE_LABELS[a.type]}</Tag>
@@ -67,7 +84,12 @@ export default function ActivityView({ a }: { a: Activity }) {
           <div>
             <HeroVideo src={heroVideo} />
             <h2 className="sec-title" style={{ fontSize: 26, marginBottom: 12 }}>תיאור הפעילות</h2>
-            <p style={{ fontSize: 15.5, lineHeight: 1.8, color: "#475569", marginBottom: 22 }}>{description}</p>
+            {descIsHtml ? (
+              <div className="rte-content" style={{ fontSize: 15.5, lineHeight: 1.8, color: "#475569", marginBottom: 22 }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }} />
+            ) : (
+              <p style={{ fontSize: 15.5, lineHeight: 1.8, color: "#475569", marginBottom: 22, whiteSpace: "pre-wrap" }}>{description}</p>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 12 }}>
               {features.map((f, i) => (
                 <div key={i} style={{ background: "#fff", border: "1px solid #eef0f3", borderRadius: 12, padding: "14px 10px", textAlign: "center", boxShadow: "0 3px 10px rgba(15,23,42,0.04)" }}>
@@ -77,6 +99,7 @@ export default function ActivityView({ a }: { a: Activity }) {
                 </div>
               ))}
             </div>
+            <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 10 }}>* התוכן מותאם לגיל</p>
           </div>
 
           {/* עמודה שמאלית (RTL שנייה): פוסטר + כפתורים + נקודות מכירה */}
@@ -127,7 +150,7 @@ export default function ActivityView({ a }: { a: Activity }) {
             <span className="sec-label" style={{ borderColor: a.grad1, color: a.grad1 }}>וידאו</span>
             <h2 className="sec-title" style={{ marginTop: 6, fontSize: 30 }}>סרטונים מהפעילות</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,360px))", justifyContent: "center", gap: 16 }}>
             {a.videos!.map((v, i) => <VideoCard key={i} title={v.title} src={v.src} poster={v.poster} accent={a.grad1} />)}
           </div>
         </section>
@@ -174,20 +197,21 @@ export default function ActivityView({ a }: { a: Activity }) {
       })()}
 
       {/* ═══════════════ מה מקבלים ═══════════════ */}
-      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "3.2rem 1.5rem" }}>
-        <div style={{ textAlign: "center", marginBottom: 30 }}>
-          <span className="sec-label" style={{ borderColor: "#16a34a", color: "#16a34a" }}>הכל כלול</span>
-          <h2 className="sec-title" style={{ marginTop: 6, fontSize: 30 }}>מה מקבלים בפעילות?</h2>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit,minmax(140px,1fr))`, gap: 22, justifyItems: "center", maxWidth: gives.length <= 4 ? 760 : "none", margin: "0 auto" }}>
-          {gives.map((item, i) => (
-            <div key={i} style={{ textAlign: "center", maxWidth: 150 }}>
-              <div style={{ width: 72, height: 72, borderRadius: "50%", border: `2px solid ${a.grad1}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, margin: "0 auto 12px", background: "#fff" }}>{giveIcons[i % giveIcons.length]}</div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#334155", lineHeight: 1.45 }}>{item}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {gives.length > 0 && (
+        <section style={{ maxWidth: 1000, margin: "0 auto", padding: "3.2rem 1.5rem" }}>
+          <div style={{ textAlign: "center", marginBottom: 30 }}>
+            <h2 className="sec-title" style={{ marginTop: 6, fontSize: 30 }}>מה מקבלים בפעילות?</h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit,minmax(140px,1fr))`, gap: 22, justifyItems: "center", maxWidth: gives.length <= 4 ? 760 : "none", margin: "0 auto" }}>
+            {gives.map((item, i) => (
+              <div key={i} style={{ textAlign: "center", maxWidth: 150 }}>
+                <div style={{ width: 72, height: 72, borderRadius: "50%", border: `2px solid ${a.grad1}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, margin: "0 auto 12px", background: "#fff" }}>{item.icon}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#334155", lineHeight: 1.45 }}>{item.text}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ═══════════════ CTA סיום ═══════════════ */}
       <section style={{ position: "relative", background: grad, padding: "3.6rem 1.5rem", textAlign: "center", overflow: "hidden" }}>
@@ -366,7 +390,7 @@ function AudioRow({ name, role, src, duration }: { name: string; role: string; s
 
 function Gallery({ images, accent }: { images: string[]; accent: string }) {
   const [idx, setIdx] = useState<number | null>(null);
-  const loop = [...images, ...images];
+  const [showAll, setShowAll] = useState(false);
   const close = useCallback(() => setIdx(null), []);
   const next = useCallback(() => setIdx(i => (i === null ? null : (i + 1) % images.length)), [images.length]);
   const prev = useCallback(() => setIdx(i => (i === null ? null : (i - 1 + images.length) % images.length)), [images.length]);
@@ -382,22 +406,31 @@ function Gallery({ images, accent }: { images: string[]; accent: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [idx, close, next, prev]);
 
+  const visible = showAll ? images : images.slice(0, 6);
+
   return (
     <section style={{ padding: "3rem 0 2.6rem" }}>
       <div style={{ textAlign: "center", marginBottom: 22, padding: "0 1.5rem" }}>
         <span className="sec-label" style={{ borderColor: accent, color: accent }}>גלריה</span>
         <h2 className="sec-title" style={{ marginTop: 6, fontSize: 30 }}>רגעים מהפעילות</h2>
       </div>
-      <div className="gal-track-wrap" style={{ overflow: "hidden", maskImage: "linear-gradient(to left, transparent, #000 5%, #000 95%, transparent)" }}>
-        <div className="gal-track" style={{ display: "flex", gap: 14, width: "max-content", animation: "galScroll 38s linear infinite" }}>
-          {loop.map((src, i) => (
-            <button key={i} onClick={() => setIdx(i % images.length)}
-              style={{ padding: 0, border: "none", borderRadius: 14, overflow: "hidden", cursor: "pointer", flexShrink: 0, width: 280, height: 200, background: "#e5e7eb" }}>
-              <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-            </button>
-          ))}
-        </div>
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 1.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 14 }}>
+        {visible.map((src, i) => (
+          <button key={i} onClick={() => setIdx(i)}
+            style={{ padding: 0, border: "none", borderRadius: 16, overflow: "hidden", cursor: "pointer", width: "100%", aspectRatio: "4/3", background: "#e5e7eb" }}>
+            <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          </button>
+        ))}
       </div>
+
+      {images.length > 6 && !showAll && (
+        <div style={{ textAlign: "center", marginTop: 24 }}>
+          <button onClick={() => setShowAll(true)}
+            style={{ padding: "12px 32px", fontSize: 14, fontWeight: 700, background: "#fff", color: accent, border: `1.5px solid ${accent}`, borderRadius: 30, cursor: "pointer", fontFamily: "Rubik, sans-serif" }}>
+            הצג עוד תמונות ({images.length - 6}+)
+          </button>
+        </div>
+      )}
       <p style={{ textAlign: "center", fontSize: 13, color: "#94a3b8", marginTop: 16 }}>🖐 לחצו על תמונה כדי להגדיל</p>
 
       {idx !== null && (
@@ -407,11 +440,6 @@ function Gallery({ images, accent }: { images: string[]; accent: string }) {
           <button onClick={(e) => { e.stopPropagation(); prev(); }} style={navBtn("end")} aria-label="הקודם">›</button>
         </Lightbox>
       )}
-
-      <style>{`
-        @keyframes galScroll { from{transform:translateX(0)} to{transform:translateX(50%)} }
-        .gal-track-wrap:hover .gal-track{ animation-play-state:paused; }
-      `}</style>
     </section>
   );
 }

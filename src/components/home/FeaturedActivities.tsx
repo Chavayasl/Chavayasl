@@ -3,7 +3,16 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ACTIVITIES, TYPE_LABELS, type Activity } from "@/lib/data";
 import { DEFAULT_CATEGORY_TREE, AGE_FILTERS, currentHolidayIndex, type CategoryGroup } from "@/lib/categories";
-import { BookButton } from "@/components/BookButton";
+import { ytId, ytEmbed } from "@/lib/media";
+
+// עונה נוכחית לפי חודש הכניסה (ישראל / חצי כדור צפוני)
+function currentSeason(): string {
+  const m = new Date().getMonth(); // 0 = ינואר
+  if (m <= 1 || m === 11) return "winter";  // דצמבר–פברואר
+  if (m <= 4) return "spring";              // מרץ–מאי
+  if (m <= 7) return "summer";              // יוני–אוגוסט
+  return "autumn";                          // ספטמבר–נובמבר
+}
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -19,46 +28,56 @@ function useReveal() {
 function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
   const [hov, setHov] = useState(false);
   const hoverImg = a.secondImage ?? a.gallery?.find(g => g !== a.mainImage) ?? a.gallery?.[0];
+  const cardVideo = a.heroVideo;               // הסרטון שהמנהל הגדיר — מתנגן ללא שמע
+  const yt = cardVideo ? ytId(cardVideo) : null;
   return (
-    <div className="card" style={{ overflow: "hidden", animation: `fadeUp 0.5s ease ${Math.min(i, 8) * 0.06}s both`, transition: "transform 0.25s ease, box-shadow 0.25s", transform: hov ? "translateY(-5px) scale(1.02)" : "none" }}
+    <Link href={`/activities/${a.slug}`} className="card" style={{ overflow: "hidden", textDecoration: "none", color: "inherit", cursor: "pointer", animation: `fadeUp 0.5s ease ${Math.min(i, 8) * 0.06}s both`, transition: "transform 0.25s ease, box-shadow 0.25s", transform: hov ? "translateY(-5px) scale(1.02)" : "none" }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-      {/* Visual */}
+      {/* Visual — סרטון מתנגן כברירת מחדל, בריחוף מוצגת התמונה הראשית */}
       <div style={{ height: 190, position: "relative", overflow: "hidden", background: `linear-gradient(135deg,${a.grad1},${a.grad2})` }}>
         <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg,${a.grad1h},${a.grad2h})`, opacity: hov ? 1 : 0, transition: "opacity 0.4s" }} />
-        {a.mainImage ? (
-          <img src={a.mainImage} alt={a.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        {cardVideo ? (
+          <>
+            {yt
+              ? <iframe src={ytEmbed(yt, { autoplay: true, mute: true, loop: true, controls: false })} title={a.name} allow="autoplay; encrypted-media" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", pointerEvents: "none" }} />
+              : <video src={cardVideo} autoPlay muted loop playsInline preload="metadata" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />}
+            {a.mainImage && (
+              <img src={a.mainImage} alt={a.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.4s ease", pointerEvents: "none" }} />
+            )}
+          </>
+        ) : a.mainImage ? (
+          <>
+            <img src={a.mainImage} alt={a.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            {hoverImg && hoverImg !== a.mainImage && (
+              <img src={hoverImg} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.45s ease" }} />
+            )}
+          </>
         ) : (
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 72, opacity: 0.18 }}>{a.emoji}</span>
           </div>
         )}
-        {hoverImg && hoverImg !== a.mainImage && (
-          <img src={hoverImg} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.45s ease" }} />
-        )}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.3) 0%,transparent 55%)" }} />
-        <div style={{ position: "absolute", top: 12, right: 12, left: 12, display: "flex", justifyContent: "space-between" }}>
-          <span style={{ background: "rgba(255,255,255,0.95)", color: "#374151", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 2 }}>{TYPE_LABELS[a.type]}</span>
-          {a.isGafan && <span style={{ background: "#16a34a", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 2 }}>גפ&quot;ן</span>}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.3) 0%,transparent 55%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: 12, right: 12, left: 12, display: "flex", justifyContent: "flex-start", pointerEvents: "none" }}>
+          <span style={{ background: "rgba(255,255,255,0.95)", color: "#374151", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 6 }}>{TYPE_LABELS[a.type]}</span>
         </div>
-        {a.isFeatured && (
-          <div style={{ position: "absolute", bottom: 10, right: 12, background: "#FFD93D", color: "#0F172A", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 2 }}>מומלץ</div>
-        )}
       </div>
       {/* Body */}
-      <div style={{ padding: "16px 18px 18px" }}>
+      <div className="card-body" style={{ padding: "16px 18px 18px" }}>
         <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", marginBottom: 5 }}>{a.name}</h3>
         <p style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.55, marginBottom: 12 }}>{a.shortDescription}</p>
         <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
-          {[{ t: "⏱", v: `${a.duration} דק'` }, { t: "👥", v: `עד ${a.maxParticipants}` }, { t: "🎂", v: a.maxAge ? `${a.minAge}–${a.maxAge}` : `${a.minAge}+` }].map((m, j) => (
+          {[{ t: "⏱", v: `${a.duration} דק'` }, { t: "👥", v: a.maxParticipants ? `עד ${a.maxParticipants}` : "ללא הגבלה" }, { t: "🎂", v: a.maxAge ? `${a.minAge}–${a.maxAge}` : `${a.minAge}+` }].map((m, j) => (
             <span key={j} style={{ fontSize: 11, color: "#94a3b8" }}>{m.t} {m.v}</span>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <BookButton activity={a.slug} className="btn-red" style={{ flex: 1, fontSize: 12, padding: "9px 0", justifyContent: "center", borderRadius: 3 }}>לבקשת הצעת מחיר</BookButton>
-          <Link href={`/activities/${a.slug}`} style={{ flex: 0.75, textAlign: "center", fontSize: 12, fontWeight: 600, padding: "9px 0", background: "#f5f6f8", color: "#374151", borderRadius: 3, textDecoration: "none" }}>פרטים ←</Link>
+        <div className="card-btns" style={{ display: "flex", justifyContent: "flex-end", paddingTop: 4 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, color: "#CC2222" }}>
+            לצפייה בפעילות ←
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -67,6 +86,8 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
   const [tabIdx, setTabIdx] = useState(0); // 0 = הכל, 1..n = groups[tabIdx-1]
   const [activeIdx, setActiveIdx] = useState(-1); // -1 = הכל (בתוך קטגוריה)
   const [ageFilter, setAgeFilter] = useState<string | null>(null); // null = כל הגילאים
+  const [showAll, setShowAll] = useState(false); // ברירת מחדל: 3 פעילויות + "הצג עוד"
+  useEffect(() => { setShowAll(false); }, [tabIdx, activeIdx, ageFilter]);
 
   // הגיל הוא מסנן רוחבי — מסירים אותו מהקטגוריות הראשיות
   const groups = (categoryTree.length ? categoryTree : DEFAULT_CATEGORY_TREE).filter(g => g.id !== "age");
@@ -94,6 +115,13 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
   if (ageFilter) {
     activities = activities.filter(a => a.ageGroups?.includes(ageFilter) || a.ageGroups?.includes("multi"));
   }
+
+  // מיון לפי העונה הנוכחית (לפי תאריך הכניסה): עונה נוכחית קודם → כל השנה → שאר העונות
+  const cs = currentSeason();
+  const seasonRank = (a: Activity) => (a.season === cs ? 0 : (!a.season || a.season === "all_year") ? 1 : 2);
+  activities = [...activities].sort((x, y) => seasonRank(x) - seasonRank(y));
+
+  const shown = showAll ? activities : activities.slice(0, 3);
 
   // מעבר טאב — בקטגוריית חגים בוחרים אוטומטית את החג הרלוונטי לתאריך
   const handleTab = (i: number) => {
@@ -151,11 +179,21 @@ export function FeaturedActivities({ allActivities = ACTIVITIES, categoryTree = 
 
         {/* Grid */}
         {activities.length > 0 ? (
-          <div key={`${tabIdx}-${activeIdx}`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 22 }}>
-            {activities.map((a, i) => <Card key={a.id} a={a} i={i} />)}
+          <div key={`${tabIdx}-${activeIdx}`} className="acts-grid">
+            {shown.map((a, i) => <Card key={a.id} a={a} i={i} />)}
           </div>
         ) : (
           <div style={{ textAlign: "center", color: "#94a3b8", fontSize: 14, padding: "2rem 0" }}>אין פעילויות מתאימות כרגע</div>
+        )}
+
+        {/* הצג עוד */}
+        {!showAll && activities.length > 3 && (
+          <div style={{ textAlign: "center", marginTop: 32 }}>
+            <button onClick={() => setShowAll(true)}
+              style={{ padding: "13px 38px", fontSize: 15, fontWeight: 700, background: "#CC2222", color: "#fff", border: "none", borderRadius: 30, cursor: "pointer", fontFamily: "Rubik, sans-serif", boxShadow: "0 8px 22px rgba(204,34,34,0.28)" }}>
+              הצג עוד פעילויות ({activities.length - 3}+)
+            </button>
+          </div>
         )}
 
       </div>

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const newActivity: Activity = {
     ...body,
     id: genId(),
-    slug: body.slug || body.name.replace(/\s+/g, "-").replace(/[^\w-]/g, ""),
+    slug: body.slug || body.name.trim().replace(/\s+/g, "-").replace(/[^\w֐-׿-]/g, ""),
   };
   const ok = await dbInsert("activities", newActivity);
   return NextResponse.json({ ...newActivity, persisted: ok }, { status: 201 });
