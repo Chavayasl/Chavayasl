@@ -1,5 +1,19 @@
 export type ActivityType = "WORKSHOP" | "SHOW" | "GAME" | "FOOD";
 
+/**
+ * יצירת slug לכתובת — שומר אותיות עברית (U+0590–U+05FF), אנגלית, ספרות ומקפים.
+ * מחליף רווחים במקף, מאחד מקפים כפולים, ומסיר מקפים מההתחלה/סוף.
+ * אם לא נשאר כלום תקין — מחזיר מחרוזת ריקה (ואז השרת גוזר מהשם / מזהה).
+ */
+export function toSlug(input: string): string {
+  return (input || "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w֐-׿-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export interface Activity {
   id: string;
   slug: string;

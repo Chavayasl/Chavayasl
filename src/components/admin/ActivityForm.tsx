@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { SEASON_LABELS, type Activity } from "@/lib/data";
+import { SEASON_LABELS, toSlug, type Activity } from "@/lib/data";
 import { ytId, ytThumb } from "@/lib/media";
 import { RichText } from "./RichText";
 import { IconPicker } from "./IconPicker";
@@ -33,11 +33,6 @@ const LANG_OPTIONS = [
   { id: "ru", label: "רוסית" },
   { id: "ar", label: "ערבית" },
 ];
-
-// יצירת slug — שומר אותיות עברית (U+0590–U+05FF), אנגלית, ספרות ומקפים
-function slugify(s: string): string {
-  return s.trim().replace(/\s+/g, "-").replace(/[^\w֐-׿-]/g, "");
-}
 
 const LABEL: Record<string, string> = { WORKSHOP: "סדנה", SHOW: "הצגה", GAME: "משחק", FOOD: "בישול" };
 const AGE_OPTIONS = [
@@ -160,8 +155,8 @@ export function ActivityForm({ initial }: { initial?: Partial<Activity> }) {
 
       {/* ── פרטים בסיסיים ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        <div>{label("שם הפעילות *")}<input required style={inputStyle} value={form.name} onChange={e => { set("name", e.target.value); if (!initial?.id) set("slug", slugify(e.target.value)); }} placeholder="שם הפעילות" /></div>
-        <div>{label("Slug (סיומת לינק — ניתן בעברית)")}<input style={inputStyle} value={form.slug} onChange={e => set("slug", slugify(e.target.value))} placeholder="לדוגמה: שופרתון" dir="auto" /></div>
+        <div>{label("שם הפעילות *")}<input required style={inputStyle} value={form.name} onChange={e => { set("name", e.target.value); if (!initial?.id) set("slug", toSlug(e.target.value)); }} placeholder="שם הפעילות" /></div>
+        <div>{label("Slug (סיומת לינק — אופציונלי, ייווצר אוטומטית מהשם)")}<input style={inputStyle} value={form.slug} onChange={e => set("slug", toSlug(e.target.value))} placeholder="ייווצר אוטומטית מהשם" dir="auto" /></div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>

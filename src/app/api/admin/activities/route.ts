@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbList, dbInsert, dbUpdate, dbDelete, genId } from "@/lib/storage";
-import { ACTIVITIES } from "@/lib/data";
+import { ACTIVITIES, toSlug } from "@/lib/data";
 import type { Activity } from "@/lib/data";
 
 export async function GET() {
@@ -10,11 +10,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const newActivity: Activity = {
-    ...body,
-    id: genId(),
-    slug: body.slug || body.name.trim().replace(/\s+/g, "-").replace(/[^\w֐-׿-]/g, ""),
-  };
+  // slug ברירת מחדל — אם לא הוגדר (או שבור), נגזר אוטומטית מהשם; אם גם זה ריק — מזהה ייחודי
+  const slug = toSlug(body.slug) || toSlug(body.name) || genId();
+  const newActivity: Activity = { ...body, id: genId(), slug };
   const ok = await dbInsert("activities", newActivity);
   return NextResponse.json({ ...newActivity, persisted: ok }, { status: 201 });
 }
