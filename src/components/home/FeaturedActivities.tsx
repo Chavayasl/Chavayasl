@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ACTIVITIES, TYPE_LABELS, type Activity } from "@/lib/data";
 import { DEFAULT_CATEGORY_TREE, AGE_FILTERS, currentHolidayIndex, type CategoryGroup } from "@/lib/categories";
 import { ytId, ytEmbed } from "@/lib/media";
@@ -42,14 +43,14 @@ function Card({ a, i }: { a: typeof ACTIVITIES[0]; i: number }) {
               ? <iframe src={ytEmbed(yt, { autoplay: true, mute: true, loop: true, controls: false })} title={a.name} allow="autoplay; encrypted-media" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", pointerEvents: "none" }} />
               : <video src={cardVideo} autoPlay muted loop playsInline preload="metadata" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />}
             {a.mainImage && (
-              <img src={a.mainImage} alt={a.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.4s ease", pointerEvents: "none" }} />
+              <Image fill src={a.mainImage} alt={a.name} sizes="(max-width:640px) 50vw, 300px" style={{ objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.4s ease", pointerEvents: "none" }} />
             )}
           </>
         ) : a.mainImage ? (
           <>
-            <img src={a.mainImage} alt={a.name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            <Image fill src={a.mainImage} alt={a.name} sizes="(max-width:640px) 50vw, 300px" style={{ objectFit: "cover" }} />
             {hoverImg && hoverImg !== a.mainImage && (
-              <img src={hoverImg} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.45s ease" }} />
+              <Image fill src={hoverImg} alt="" sizes="(max-width:640px) 50vw, 300px" style={{ objectFit: "cover", opacity: hov ? 1 : 0, transition: "opacity 0.45s ease" }} />
             )}
           </>
         ) : (

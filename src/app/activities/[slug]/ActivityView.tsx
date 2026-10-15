@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { BookButton } from "@/components/BookButton";
 import { SEASON_LABELS, TYPE_LABELS, type Activity } from "@/lib/data";
 import { ytId, ytEmbed, ytThumb } from "@/lib/media";
@@ -106,7 +107,7 @@ export default function ActivityView({ a }: { a: Activity }) {
           <div>
             {/* פוסטר מעוצב */}
             {a.poster ? (
-              <img src={a.poster} alt={a.name} style={{ width: "100%", borderRadius: 16, display: "block", boxShadow: "0 16px 44px rgba(15,23,42,0.16)", marginBottom: 16 }} />
+              <Image src={a.poster} alt={a.name} width={800} height={1000} sizes="(max-width:860px) 100vw, 420px" style={{ width: "100%", height: "auto", borderRadius: 16, display: "block", boxShadow: "0 16px 44px rgba(15,23,42,0.16)", marginBottom: 16 }} />
             ) : (
               <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", background: grad, padding: "34px 24px", textAlign: "center", boxShadow: "0 16px 44px rgba(15,23,42,0.16)", marginBottom: 16, aspectRatio: "4/5", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                 <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 15%, rgba(255,255,255,0.16), transparent 60%)" }} />
@@ -417,8 +418,8 @@ function Gallery({ images, accent }: { images: string[]; accent: string }) {
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 1.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 14 }}>
         {visible.map((src, i) => (
           <button key={i} onClick={() => setIdx(i)}
-            style={{ padding: 0, border: "none", borderRadius: 16, overflow: "hidden", cursor: "pointer", width: "100%", aspectRatio: "4/3", background: "#e5e7eb" }}>
-            <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            style={{ position: "relative", padding: 0, border: "none", borderRadius: 16, overflow: "hidden", cursor: "pointer", width: "100%", aspectRatio: "4/3", background: "#e5e7eb" }}>
+            <Image fill src={src} alt="" sizes="(max-width:640px) 50vw, 240px" style={{ objectFit: "cover" }} />
           </button>
         ))}
       </div>
@@ -436,7 +437,7 @@ function Gallery({ images, accent }: { images: string[]; accent: string }) {
       {idx !== null && (
         <Lightbox onClose={close}>
           <button onClick={(e) => { e.stopPropagation(); next(); }} style={navBtn("start")} aria-label="הבא">‹</button>
-          <img src={images[idx]} alt="" style={{ maxWidth: "86vw", maxHeight: "86vh", borderRadius: 12, objectFit: "contain" }} />
+          <Image src={images[idx]} alt="" width={1600} height={1200} sizes="86vw" style={{ maxWidth: "86vw", maxHeight: "86vh", width: "auto", height: "auto", borderRadius: 12, objectFit: "contain" }} />
           <button onClick={(e) => { e.stopPropagation(); prev(); }} style={navBtn("end")} aria-label="הקודם">›</button>
         </Lightbox>
       )}

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { SEASON_LABELS, type Activity } from "@/lib/data";
 import { ytId, ytThumb } from "@/lib/media";
 import { RichText } from "./RichText";
@@ -54,6 +55,14 @@ const CATEGORY_OPTIONS = [
 
 // ─── העלאת קובץ ל-Supabase Storage ───
 async function uploadToServer(file: File, folder: string): Promise<string | null> {
+  // 0. דחיסה בדפדפן לתמונות לפני ההעלאה — מקטין משקל ו-egress (עד 1600px, עד 0.5MB, שומר פורמט)
+  let body: Blob = file;
+  if (file.type.startsWith("image/")) {
+    try {
+      const imageCompression = (await import("browser-image-compression")).default;
+      body = await imageCompression(file, { maxSizeMB: 0.5, maxWidthOrHeight: 1600, useWebWorker: true, fileType: file.type });
+    } catch (e) { console.warn("דחיסת תמונה נכשלה — מעלה מקור", e); body = file; }
+  }
   // 1. בקשת signed URL מהשרת (גוף קטן — לא חורג ממגבלת Vercel)
   const res = await fetch("/api/admin/upload", {
     method: "POST", headers: { "Content-Type": "application/json" },
@@ -62,7 +71,7 @@ async function uploadToServer(file: File, folder: string): Promise<string | null
   if (!res.ok) return null;
   const { uploadUrl, publicUrl } = await res.json();
   // 2. העלאת הקובץ ישירות ל-Supabase (עוקף את מגבלת ה-4.5MB של Vercel)
-  const up = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+  const up = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body });
   if (!up.ok) { console.error("upload PUT failed", up.status); return null; }
   return publicUrl as string;
 }
@@ -422,7 +431,7 @@ function UploadButton({ accept, folder, label, multiple, onUrl }: { accept: stri
 function SingleImage({ src, folder, onChange }: { src?: string; folder: string; onChange: (url: string | undefined) => void }) {
   return src ? (
     <div style={{ position: "relative", width: 140, height: 100, borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0" }}>
-      <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <Image fill src={src} alt="" sizes="140px" style={{ objectFit: "cover" }} />
       <button type="button" onClick={() => onChange(undefined)} style={removeBtn}>✕</button>
     </div>
   ) : <UploadButton accept="image/*" folder={folder} label="📤 העלה תמונה" onUrl={onChange} />;
@@ -472,7 +481,7 @@ function Gallery({ images, main, second, onAdd, onRemove, onSetMain, onSetSecond
         const border = isMain ? "#CC2222" : isSecond ? "#2563EB" : "#e2e8f0";
         return (
           <div key={i} style={{ position: "relative", width: 124, height: 96, borderRadius: 8, overflow: "hidden", border: `2px solid ${border}` }}>
-            <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <Image fill src={src} alt="" sizes="124px" style={{ objectFit: "cover" }} />
             <div style={{ position: "absolute", bottom: 3, insetInlineStart: 3, insetInlineEnd: 3, display: "flex", gap: 4 }}>
               <button type="button" onClick={() => onSetMain(src)} title="תמונה ראשית" style={galBadge(isMain, "#CC2222")}>{isMain ? "★" : "☆"} ראשית</button>
               <button type="button" onClick={() => onSetSecond(src)} title="תמונה שנייה (hover)" style={galBadge(isSecond, "#2563EB")}>② שנייה</button>

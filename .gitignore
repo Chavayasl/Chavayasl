@@ -43,5 +43,9 @@ next-env.d.ts
 # Local data storage
 /data/
 
+# גיבוי מקומי של קבצי Storage (סקריפט דחיסה)
+/backup/
+compress-storage.mjs
+
 # allow example env
 !.env.example
