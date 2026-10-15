@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface A11ySettings {
@@ -200,6 +201,7 @@ function ToggleRow({ label, desc, active, onClick }: { label: string; desc?: str
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function AccessibilityBtn() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [s, setS] = useState<A11ySettings>(DEFAULTS);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -255,6 +257,9 @@ export function AccessibilityBtn() {
 
   const reset = () => { setS(DEFAULTS); document.documentElement.style.fontSize = ""; };
   const activeCount = Object.entries(s).filter(([k, v]) => k === "fontSize" ? v !== 0 : v === true).length;
+
+  // לא מציגים את כפתור הנגישות בעמודי הניהול
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 99999 }}>
