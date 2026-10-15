@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import { BookButton } from "@/components/BookButton";
 
 const VALUES = [
   { icon: "🎓", title: "חינוך דרך חוויה", text: "כל פעילות מעוצבת כך שהילד לומד תוך כדי כיף ושמחה" },
@@ -90,7 +90,7 @@ export default function AboutPage() {
           <h2 style={{ color: "#fff", fontSize: "clamp(22px,3vw,32px)", fontWeight: 900, marginBottom: 12 }}>בואו נתחיל!</h2>
           <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, marginBottom: "1.5rem" }}>מוכנים לפעילות שהילדים לא ישכחו?</p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/book" className="btn-red" style={{ fontSize: 14 }}>להזמנת פעילות</Link>
+            <BookButton className="btn-red" style={{ fontSize: 14 }} />
             <a href="tel:0556671997" style={{ display: "inline-block", background: "transparent", color: "rgba(255,255,255,0.8)", padding: "12px 24px", borderRadius: 3, fontSize: 14, fontWeight: 600, border: "1.5px solid rgba(255,255,255,0.25)", textDecoration: "none" }}>055-667-1997</a>
           </div>
         </div>
